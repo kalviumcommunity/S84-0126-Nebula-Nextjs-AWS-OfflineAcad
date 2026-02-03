@@ -1,25 +1,25 @@
-const nextJest = require('next/jest');
+const nextJest = require("next/jest");
 
 const createJestConfig = nextJest({
-  dir: './',
+  dir: "./",
 });
 
 const customJestConfig = {
-  testEnvironment: 'jsdom',
+  testEnvironment: "jsdom",
 
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    "^@/(.*)$": "<rootDir>/src/$1",
   },
 
   collectCoverage: true,
   collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/app/**',            // App Router layouts/pages
-    '!src/middleware.ts',
-    '!src/**/index.ts',
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/app/**",            // App Router layouts/pages
+    "!src/middleware.ts",
+    "!src/**/index.ts",
   ],
 
   coverageThreshold: {

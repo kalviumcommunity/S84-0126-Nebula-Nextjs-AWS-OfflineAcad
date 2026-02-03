@@ -24,6 +24,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   progress  UserProgress[]
+  activities Activity[]
 
   @@index([email])
 }
@@ -31,6 +32,7 @@ model User {
 model Lesson {
   id          String   @id @default(uuid())
   title       String
+  subject     String   @default("General")
   description String?
   duration    Int
   contentUrl  String?
@@ -53,6 +55,18 @@ model UserProgress {
   @@unique([userId, lessonId])
   @@index([userId])
   @@index([lessonId])
+}
+
+model Activity {
+  id        String   @id @default(uuid())
+  type      String   // e.g., "COMPLETED", "DOWNLOADED", "STARTED"
+  content   String   // e.g., "Math: Completed Chapter 2 Quiz"
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model Secret {

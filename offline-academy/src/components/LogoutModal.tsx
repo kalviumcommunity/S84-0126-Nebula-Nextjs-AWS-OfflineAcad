@@ -1,4 +1,6 @@
 "use client";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -11,38 +13,31 @@ export default function LogoutModal({
   onClose,
   onConfirm,
 }: LogoutModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="logout-title"
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Detach Node?"
+      footer={
+        <div className="flex gap-4 w-full">
+          <Button variant="ghost" onClick={onClose} className="flex-1">
+            Stay Connected
+          </Button>
+          <Button variant="danger" onClick={onConfirm} className="flex-1">
+            Detach Now
+          </Button>
+        </div>
+      }
     >
-      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-80">
-        <h2 id="logout-title" className="text-lg font-bold">
-          Logout?
-        </h2>
-        <p className="text-sm text-gray-500 mt-2">
-          Are you sure you want to logout?
+      <div className="space-y-4">
+        <p className="text-slate-400 font-light leading-relaxed">
+          You are about to terminate the secure session. All offline synchronization progress for this node will be suspended until the next authorization.
         </p>
-
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-3 py-1 border rounded"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="px-3 py-1 bg-red-600 text-white rounded"
-          >
-            Logout
-          </button>
+        <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/10">
+          <p className="text-[10px] uppercase font-bold tracking-widest text-rose-400">Security Warning</p>
+          <p className="text-xs text-rose-300/60 mt-1">Pending outbound syncs may be lost if not committed.</p>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

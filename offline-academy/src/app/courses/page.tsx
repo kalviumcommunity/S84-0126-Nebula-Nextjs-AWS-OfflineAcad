@@ -3,163 +3,122 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ProgressBar } from "@/components/ui";
-import { useEffect } from "react";
+import { Card, CardContent, Button, Badge, ProgressBar } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 export default function CoursesPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [courses, setCourses] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
+      return;
     }
-  }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) {
-    return null;
-  }
+    const fetchCourses = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`/api/courses${activeFilter !== "All" ? `?category=${activeFilter}` : ""}`);
+        const data = await res.json();
+        if (data.success) {
+          setCourses(data.courses);
+        }
+      } catch (error) {
+        toast.error("Failed to load courses");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const allCourses = [
-    {
-      id: 1,
-      title: "Mathematics Fundamentals",
-      subject: "Mathematics",
-      progress: 65,
-      lessons: "24/36",
-      level: "Intermediate",
-      image: "📐",
-      description: "Master essential math concepts",
-    },
-    {
-      id: 2,
-      title: "English Language Arts",
-      subject: "Language Arts",
-      progress: 42,
-      lessons: "15/36",
-      level: "Beginner",
-      image: "📖",
-      description: "Improve reading and writing skills",
-    },
-    {
-      id: 3,
-      title: "Science Basics",
-      subject: "Science",
-      progress: 78,
-      lessons: "28/36",
-      level: "Intermediate",
-      image: "🔬",
-      description: "Explore the wonders of science",
-    },
-    {
-      id: 4,
-      title: "History & Geography",
-      subject: "Social Studies",
-      progress: 55,
-      lessons: "20/36",
-      level: "Intermediate",
-      image: "🌍",
-      description: "Discover world history and geography",
-    },
-    {
-      id: 5,
-      title: "Computer Science Basics",
-      subject: "Technology",
-      progress: 30,
-      lessons: "11/36",
-      level: "Beginner",
-      image: "💻",
-      description: "Learn programming fundamentals",
-    },
-    {
-      id: 6,
-      title: "Physics & Chemistry",
-      subject: "Science",
-      progress: 20,
-      lessons: "7/36",
-      level: "Advanced",
-      image: "⚛️",
-      description: "Advanced physical sciences",
-    },
-  ];
+    fetchCourses();
+  }, [isAuthenticated, router, activeFilter]);
 
-  const levelColors = {
-    Beginner: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    Intermediate: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-    Advanced: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  };
+  if (!isAuthenticated) return null;
+
+  const categories = ["All", "Mathematics", "Science", "English", "History", "General"];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex bg-[#0a0b10] min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col relative">
+        <div className="mesh-bg" />
         <Header />
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">All Courses</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Explore our comprehensive curriculum designed for offline learning
-              </p>
+        <main className="flex-1 overflow-y-auto pt-32 pb-20 px-8 relative z-10">
+          <div className="max-w-7xl mx-auto space-y-12">
+            {/* Header section */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 animate-fade-in-up">
+              <div className="space-y-2">
+                <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-black tracking-tighter">Course Catalog</h1>
+                <p className="text-slate-400 font-medium max-w-lg">
+                  Browse and access all your educational materials available for offline study.
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 p-2 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-xl">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveFilter(cat)}
+                    className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 ${activeFilter === cat ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-500 hover:text-white"}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Filters */}
-            <div className="mb-8 flex flex-wrap gap-2">
-              <Button variant="primary" size="sm">All</Button>
-              <Button variant="outline" size="sm">Mathematics</Button>
-              <Button variant="outline" size="sm">Science</Button>
-              <Button variant="outline" size="sm">Language</Button>
-              <Button variant="outline" size="sm">Technology</Button>
-            </div>
+            {/* Loading State */}
+            {isLoading ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="h-[400px] rounded-3xl bg-white/5 animate-pulse border border-white/5" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+                {courses.length > 0 ? courses.map((course) => (
+                  <Card key={course.id} variant="default" className="hover-lift group overflow-hidden border-white/10 bg-black/40 shadow-2xl">
+                    <div className="h-48 bg-gradient-to-br from-indigo-500/20 to-violet-600/20 flex items-center justify-center text-7xl group-hover:scale-110 transition-all duration-500">
+                      {course.image}
+                    </div>
 
-            {/* Courses Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allCourses.map((course) => (
-                <Card key={course.id} className="hover:shadow-lg transition-all overflow-hidden">
-                  {/* Course Image/Icon */}
-                  <div className="h-32 bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-6xl">
-                    {course.image}
-                  </div>
-
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{course.title}</CardTitle>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {course.subject}
-                        </p>
+                    <CardContent className="p-8 space-y-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest font-black tracking-widest">{course.subject}</span>
+                          <Badge variant="glass">{course.level}</Badge>
+                        </div>
+                        <h3 className="text-2xl font-black text-white group-hover:text-indigo-400 transition-colors tracking-tight uppercase">{course.title}</h3>
+                        <p className="text-xs text-slate-500 font-bold leading-relaxed">{course.description}</p>
                       </div>
-                      <Badge variant="primary">{course.level}</Badge>
-                    </div>
-                  </CardHeader>
 
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {course.description}
-                    </p>
-
-                    {/* Progress */}
-                    <div>
-                      <ProgressBar
-                        value={course.progress}
-                        label={`Progress: ${course.progress}%`}
-                      />
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                        {course.lessons} lessons completed
-                      </p>
-                    </div>
-
-                    {/* CTA Button */}
-                    <Button className="w-full mt-4">
-                      {course.progress === 0 ? "Start Course" : "Continue Learning"}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      <div className="space-y-4 pt-6 border-t border-white/5">
+                        <ProgressBar 
+                          value={course.progress} 
+                          label="Module Progress"
+                        />
+                        <div className="flex justify-between items-center bg-black/20 p-5 rounded-2xl border border-white/5">
+                          <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{course.lessons} segments</span>
+                          <Button variant="primary" size="sm" className="h-10 px-6 font-black text-[10px] uppercase shadow-lg shadow-indigo-600/20" onClick={() => router.push("/lessons")}>View Lessons</Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )) : (
+                  <div className="col-span-full py-20 text-center space-y-4">
+                    <div className="text-5xl opacity-50">📂</div>
+                    <p className="text-slate-500 font-black uppercase tracking-widest">No courses found in this category</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>

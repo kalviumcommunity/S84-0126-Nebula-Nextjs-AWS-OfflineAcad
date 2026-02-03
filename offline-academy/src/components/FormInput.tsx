@@ -1,13 +1,13 @@
 import { UseFormRegister, FieldValues, Path, FieldError } from "react-hook-form";
 
-// Generic Type T ensures this component works with ANY form schema
 interface FormInputProps<T extends FieldValues> {
   label: string;
-  name: Path<T>; // Ensures 'name' matches a key in your Zod schema
+  name: Path<T>;
   type?: string;
   register: UseFormRegister<T>;
   error?: FieldError;
   placeholder?: string;
+  className?: string;
 }
 
 export default function FormInput<T extends FieldValues>({
@@ -17,26 +17,29 @@ export default function FormInput<T extends FieldValues>({
   register,
   error,
   placeholder,
+  className = "",
 }: FormInputProps<T>) {
   return (
-    <div className="flex flex-col gap-1 mb-4">
-      <label htmlFor={name} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+    <div className="flex flex-col gap-2 mb-2 w-full group">
+      <label htmlFor={name} className="text-[10px] font-bold uppercase tracking-widest text-slate-500 group-focus-within:text-indigo-400 transition-colors">
         {label}
       </label>
-      <input
-        id={name}
-        type={type}
-        placeholder={placeholder}
-        {...register(name)}
-        className={`border p-2 rounded-md focus:outline-none focus:ring-2 bg-white dark:bg-gray-800 transition-colors
-          ${
-            error
-              ? "border-red-500 focus:ring-red-200"
-              : "border-gray-300 dark:border-gray-600 focus:ring-blue-200"
+      <div className="relative">
+        <input
+          id={name}
+          type={type}
+          placeholder={placeholder}
+          {...register(name)}
+          className={`w-full bg-white/5 border border-white/5 p-4 rounded-xl text-white font-light placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.07] transition-all duration-300 ${className} ${
+            error ? "border-rose-500/50 bg-rose-500/5" : ""
           }`}
-      />
+        />
+        {error && (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
+        )}
+      </div>
       {error && (
-        <span className="text-xs text-red-500 font-medium animate-pulse">{error.message}</span>
+        <span className="text-[10px] text-rose-400 font-medium tracking-wide translate-x-1">{error.message}</span>
       )}
     </div>
   );

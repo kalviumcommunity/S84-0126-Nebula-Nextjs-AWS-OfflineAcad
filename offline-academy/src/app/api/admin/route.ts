@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleError } from "@/lib/errorHandler";
-import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from '@/lib/security';
+import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from "@/lib/security";
 
 export async function GET(req: Request) {
   try {

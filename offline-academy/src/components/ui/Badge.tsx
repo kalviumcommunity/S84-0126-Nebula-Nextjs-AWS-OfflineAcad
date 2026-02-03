@@ -1,15 +1,16 @@
 "use client";
 
-export const Badge = ({ children, variant = "primary" }: { children: React.ReactNode; variant?: "primary" | "success" | "warning" | "danger" }) => {
+export const Badge = ({ children, variant = "primary", className = "" }: { children: React.ReactNode; variant?: "primary" | "success" | "warning" | "danger" | "glass"; className?: string }) => {
   const variants = {
-    primary: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-    success: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    warning: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    danger: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+    primary: "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20",
+    success: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+    warning: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+    danger: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
+    glass: "bg-white/5 text-slate-400 border border-white/10 backdrop-blur-md",
   };
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${variants[variant]}`}>
+    <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-[10px] uppercase font-black tracking-widest ${variants[variant]} ${className}`}>
       {children}
     </span>
   );
@@ -17,15 +18,23 @@ export const Badge = ({ children, variant = "primary" }: { children: React.React
 
 export const Alert = ({ children, type = "info" }: { children: React.ReactNode; type?: "info" | "success" | "warning" | "error" }) => {
   const types = {
-    info: "bg-blue-50 border border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-200",
-    success: "bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-200",
-    warning: "bg-yellow-50 border border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-200",
-    error: "bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-200",
+    info: "bg-indigo-500/5 border border-indigo-500/20 text-indigo-400",
+    success: "bg-emerald-500/5 border border-emerald-500/20 text-emerald-400",
+    warning: "bg-amber-500/5 border border-amber-500/20 text-amber-400",
+    error: "bg-rose-500/5 border border-rose-500/20 text-rose-400",
+  };
+
+  const icons = {
+    info: "💡",
+    success: "🛡️",
+    warning: "⚠️",
+    error: "🚫",
   };
 
   return (
-    <div className={`p-4 rounded-lg ${types[type]}`}>
-      {children}
+    <div className={`p-6 rounded-[2rem] flex gap-4 items-center ${types[type]} backdrop-blur-xl animate-fade-in-up`}>
+      <span className="text-xl">{icons[type]}</span>
+      <div className="text-sm font-light tracking-wide">{children}</div>
     </div>
   );
 };

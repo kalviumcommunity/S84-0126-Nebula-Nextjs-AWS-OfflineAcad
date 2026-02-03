@@ -4,7 +4,7 @@ import { useUI } from "@/hooks/useUI";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
-import { Card, CardContent, CardHeader, CardTitle, Button, Input } from "@/components/ui";
+import { Card, CardContent, Button, Input, Badge, ProgressBar } from "@/components/ui";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import LogoutModal from "@/components/LogoutModal";
@@ -13,10 +13,8 @@ export default function SettingsPage() {
   const { isAuthenticated, user, logout } = useAuth();
   const { theme, toggleTheme } = useUI();
   const router = useRouter();
-  const [email, setEmail] = useState("student@offlineacad.com");
-  const [language, setLanguage] = useState("english");
+  const [email, setEmail] = useState("student@offline-academy.com");
   const [offlineMode, setOfflineMode] = useState(true);
-  const [notifications, setNotifications] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
@@ -25,229 +23,149 @@ export default function SettingsPage() {
     }
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-  };
+  if (!isAuthenticated) return null;
 
   const confirmLogout = () => {
     setShowLogoutModal(false);
-    toast.loading("Logging out...");
+    const loadingToast = toast.loading("Terminating session...", {
+      style: { background: "#0f1117", color: "#fff", border: "1px solid rgba(255,255,255,0.1)" }
+    });
 
     setTimeout(() => {
-      toast.dismiss();
-      toast.success("Logged out successfully");
+      toast.dismiss(loadingToast);
+      toast.success("Node detached. Session terminated.", { icon: "🛸" });
       logout();
       router.push("/");
-    }, 1000);
+    }, 1500);
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex bg-[#0a0b10] min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col relative">
+        <div className="mesh-bg" />
         <Header />
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Manage your account and preferences
-              </p>
+        <main className="flex-1 overflow-y-auto pt-32 pb-20 px-8 relative z-10">
+          <div className="max-w-4xl mx-auto space-y-12">
+            <div className="space-y-2 animate-fade-in-up">
+              <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-black tracking-tighter">Account Settings</h1>
+              <p className="text-slate-400 font-medium max-w-md">Manage your profile, preferences, and offline storage settings for the Offline Academy.</p>
             </div>
 
-            {/* Profile Settings */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Profile Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-2xl text-white font-bold">
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">{user?.name || "User"}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Student Account</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="ml-auto">
-                    Change Avatar
-                  </Button>
-                </div>
-
-                <div className="border-t dark:border-gray-700 pt-6">
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Account Information</h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Input
-                      label="Full Name"
-                      defaultValue={user?.name || ""}
-                      readOnly
-                    />
-                    <Input
-                      label="Email Address"
-                      type="email"
-                      defaultValue={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <Input
-                      label="Student ID"
-                      defaultValue="STU-2024-001"
-                      readOnly
-                    />
-                    <Input
-                      label="School"
-                      defaultValue="Central Academy"
-                      readOnly
-                    />
-                  </div>
-                  <Button className="mt-4">Save Changes</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Display Settings */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Display & Appearance</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b dark:border-gray-700">
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">Dark Mode</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Current: {theme.toUpperCase()}
-                    </p>
-                  </div>
-                  <Button variant="outline" onClick={toggleTheme}>
-                    Toggle Theme
-                  </Button>
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-gray-900 dark:text-white mb-2">
-                    Language
-                  </label>
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white dark:border-gray-700"
-                  >
-                    <option value="english">English</option>
-                    <option value="spanish">Spanish</option>
-                    <option value="french">French</option>
-                    <option value="hindi">Hindi</option>
-                    <option value="arabic">Arabic</option>
-                  </select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Offline Settings */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Offline Mode</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between pb-4 border-b dark:border-gray-700">
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">Offline Mode</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Allow app to work without internet connection
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={offlineMode}
-                      onChange={(e) => setOfflineMode(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:peer-checked:bg-indigo-600 peer-checked:bg-indigo-600"></div>
-                  </label>
-                </div>
-
-                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">📡 Offline Storage</h4>
-                  <p className="text-sm text-blue-800 dark:text-blue-300 mb-4">
-                    Cache content locally for offline access
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <p className="flex justify-between">
-                      <span className="text-blue-800 dark:text-blue-300">Storage Used:</span>
-                      <span className="font-semibold text-blue-900 dark:text-blue-200">2.4 GB / 10 GB</span>
-                    </p>
-                    <div className="w-full h-2 bg-blue-200 rounded-full overflow-hidden dark:bg-blue-900">
-                      <div className="h-2 bg-blue-600 rounded-full" style={{ width: "24%" }}></div>
+            {/* Profile Section */}
+            <Card variant="premium" className="p-10 border-white/10 bg-black/40 shadow-2xl animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+              <div className="space-y-8">
+                <div className="flex items-center gap-8">
+                  <div className="relative group">
+                    <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-4xl text-white font-black shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-all">
+                      {user?.name?.charAt(0).toUpperCase() || "S"}
                     </div>
                   </div>
-                </div>
-
-                <Button variant="outline" className="w-full">
-                  Clear Offline Cache
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Notification Settings */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Notifications</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">Enable Notifications</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Get updates about courses and achievements</p>
+                  <div className="space-y-1">
+                    <h2 className="text-3xl font-black text-white tracking-tight">{user?.name || "Student"}</h2>
+                    <p className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.2em]">Verified Learner Profile</p>
+                    <div className="pt-3">
+                       <Badge variant="success">Account Active</Badge>
+                    </div>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notifications}
-                      onChange={(e) => setNotifications(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all dark:peer-checked:bg-indigo-600 peer-checked:bg-indigo-600"></div>
-                  </label>
+                  <Button variant="secondary" size="sm" className="ml-auto text-[10px] font-black uppercase tracking-widest h-10 px-6">Change Avatar</Button>
                 </div>
-              </CardContent>
+
+                <div className="grid md:grid-cols-2 gap-8 pt-8 border-t border-white/5">
+                  <Input label="Full Display Name" defaultValue={user?.name || ""} disabled className="bg-white/5 border-white/5" />
+                  <Input 
+                    label="Email Address" 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-white/5 border-white/5"
+                  />
+                  <Input label="Student ID" defaultValue="OA-2024-0012" disabled className="bg-white/5 border-white/5" />
+                  <Input label="Current Level" defaultValue="Intermediate Learner" disabled className="bg-white/5 border-white/5" />
+                </div>
+                <div className="flex justify-end pt-4">
+                  <Button size="sm" className="px-10 h-12 text-[10px] font-black uppercase tracking-widest">Save Changes</Button>
+                </div>
+              </div>
             </Card>
 
-            {/* Danger Zone */}
-            <Card className="border-red-200 dark:border-red-800">
-              <CardHeader>
-                <CardTitle className="text-red-600 dark:text-red-400">Danger Zone</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                  <p className="text-sm text-red-800 dark:text-red-200 mb-4">
-                    These actions are permanent and cannot be undone.
-                  </p>
+            {/* Ops Grid */}
+            <div className="grid md:grid-cols-2 gap-8 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+              {/* Display Config */}
+              <Card variant="glass" className="p-8 border-white/10 bg-black/40 space-y-8">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-white tracking-tight uppercase">Interface</h3>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Personalize your experience</p>
+                </div>
+                
+                <div className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-white">Appearance</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Theme: {theme}</p>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={toggleTheme} className="text-[10px] font-black uppercase h-9 px-6">Switch Theme</Button>
                 </div>
 
-                <div className="flex gap-4">
-                  <Button
-                    variant="danger"
-                    onClick={handleLogoutClick}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Default Language</label>
+                  <select className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500/50 appearance-none font-bold">
+                    <option>English (International)</option>
+                    <option>Hindi (Localized)</option>
+                    <option>Auto-Detect</option>
+                  </select>
+                </div>
+              </Card>
+
+              {/* Security & Offline */}
+              <Card variant="glass" className="p-8 border-white/10 bg-black/40 space-y-8">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-white tracking-tight uppercase font-black tracking-tighter">Offline Storage</h3>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Manage your local study materials</p>
+                </div>
+
+                <div className="flex items-center justify-between p-6 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-white">Background Sync</p>
+                    <p className="text-[10px] text-indigo-400 uppercase font-black tracking-widest">Status: {offlineMode ? "Active" : "Disabled"}</p>
+                  </div>
+                  <button 
+                    onClick={() => setOfflineMode(!offlineMode)}
+                    className={`w-12 h-6 rounded-full transition-all duration-500 relative ${offlineMode ? "bg-indigo-600" : "bg-white/10"}`}
                   >
-                    Logout
-                  </Button>
-                  <Button variant="outline" className="border-red-500 text-red-600 dark:text-red-400">
-                    Delete Account
-                  </Button>
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-500 ${offlineMode ? "left-7 shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "left-1"}`} />
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Local Memory Used</p>
+                    <p className="text-[10px] font-black text-white uppercase tracking-widest">2.4 GB / 10 GB</p>
+                  </div>
+                  <ProgressBar value={24} variant="primary" />
+                  <Button variant="ghost" size="sm" className="w-full text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/10 hover:text-rose-400 transition-colors h-11">Clear Local Cache</Button>
+                </div>
+              </Card>
+            </div>
+
+            {/* Termination Zone */}
+            <div className="pt-12 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+              <div className="p-10 rounded-[2.5rem] bg-rose-500/[0.03] border border-rose-500/10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="space-y-2 text-center md:text-left">
+                  <h3 className="text-xl font-black text-rose-500 tracking-tight uppercase">Account Management</h3>
+                  <p className="text-xs text-rose-300/40 font-bold max-w-sm">Warning: These actions will sign you out and may remove locally stored study progress.</p>
+                </div>
+                <div className="flex gap-4">
+                  <Button variant="secondary" className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10 h-12 px-8 text-[10px] font-black uppercase tracking-widest" onClick={() => setShowLogoutModal(true)}>Sign Out</Button>
+                  <Button variant="danger" className="h-12 px-8 text-[10px] font-black uppercase tracking-widest shadow-2xl shadow-rose-500/20">Delete Account</Button>
+                </div>
+              </div>
+            </div>
           </div>
         </main>
       </div>
 
-      {/* Logout Modal */}
       <LogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}

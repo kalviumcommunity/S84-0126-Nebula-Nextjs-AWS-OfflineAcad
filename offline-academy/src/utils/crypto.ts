@@ -12,10 +12,10 @@
  * - Keep MASTER_KEY in secure environment variables only
  */
 
-import crypto from 'crypto';
+import crypto from "crypto";
 
-const ALGORITHM = 'aes-256-cbc';
-const ENCODING: BufferEncoding = 'hex';
+const ALGORITHM = "aes-256-cbc";
+const ENCODING: BufferEncoding = "hex";
 
 /**
  * Get the master encryption key from environment
@@ -25,15 +25,15 @@ function getMasterKey(): Buffer {
   const masterKey = process.env.MASTER_KEY;
   
   if (!masterKey) {
-    throw new Error('MASTER_KEY environment variable is not set');
+    throw new Error("MASTER_KEY environment variable is not set");
   }
   
   // Ensure key is exactly 32 bytes (64 hex chars)
   if (masterKey.length !== 64) {
-    throw new Error('MASTER_KEY must be 64 hex characters (32 bytes)');
+    throw new Error("MASTER_KEY must be 64 hex characters (32 bytes)");
   }
   
-  return Buffer.from(masterKey, 'hex');
+  return Buffer.from(masterKey, "hex");
 }
 
 /**
@@ -54,14 +54,14 @@ export function encrypt(text: string): string {
     
     const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
     
-    let encrypted = cipher.update(text, 'utf8', ENCODING);
+    let encrypted = cipher.update(text, "utf8", ENCODING);
     encrypted += cipher.final(ENCODING);
     
     // Return IV + encrypted data (both needed for decryption)
     return `${iv.toString(ENCODING)}:${encrypted}`;
   } catch (error) {
     // Never log the actual text or error details (might contain secrets)
-    throw new Error('Encryption failed');
+    throw new Error("Encryption failed");
   }
 }
 
@@ -78,9 +78,9 @@ export function decrypt(encryptedText: string): string {
     const key = getMasterKey();
     
     // Split IV and encrypted data
-    const parts = encryptedText.split(':');
+    const parts = encryptedText.split(":");
     if (parts.length !== 2) {
-      throw new Error('Invalid encrypted text format');
+      throw new Error("Invalid encrypted text format");
     }
     
     const iv = Buffer.from(parts[0], ENCODING);
@@ -88,13 +88,13 @@ export function decrypt(encryptedText: string): string {
     
     const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     
-    let decrypted = decipher.update(encryptedData, ENCODING, 'utf8');
-    decrypted += decipher.final('utf8');
+    let decrypted = decipher.update(encryptedData, ENCODING, "utf8");
+    decrypted += decipher.final("utf8");
     
     return decrypted;
   } catch (error) {
     // Never log error details (might contain partial decrypted data)
-    throw new Error('Decryption failed');
+    throw new Error("Decryption failed");
   }
 }
 
@@ -105,5 +105,5 @@ export function decrypt(encryptedText: string): string {
  * Example: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
  */
 export function generateMasterKey(): string {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }

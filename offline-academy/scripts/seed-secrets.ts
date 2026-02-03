@@ -15,8 +15,8 @@
  * - In production, use secure methods to provide secrets (env vars, secure files)
  */
 
-import { PrismaClient } from '@prisma/client';
-import { encrypt } from '../src/utils/crypto';
+import { PrismaClient } from "@prisma/client";
+import { encrypt } from "../src/utils/crypto";
 
 const prisma = new PrismaClient();
 
@@ -27,10 +27,10 @@ const prisma = new PrismaClient();
  */
 const SECRETS_TO_SEED = {
   // Example: Database connection string
-  DATABASE_URL: 'postgresql://user:password@localhost:5432/offline_academy',
+  DATABASE_URL: "postgresql://user:password@localhost:5432/offline_academy",
 
   // Example: JWT signing key
-  JWT_SECRET: 'your-super-secret-jwt-key-change-this-in-production',
+  JWT_SECRET: "your-super-secret-jwt-key-change-this-in-production",
 
   // Add more secrets as needed
   // SMTP_PASSWORD: 'your-smtp-password',
@@ -40,17 +40,17 @@ const SECRETS_TO_SEED = {
 /**
  * Target environment for these secrets
  */
-const ENVIRONMENT = 'production'; // or 'development'
+const ENVIRONMENT = "production"; // or 'development'
 
 async function seedSecrets() {
-  console.log('🔐 Starting secret seeding process...\n');
+  console.log("🔐 Starting secret seeding process...\n");
 
   try {
     // Verify MASTER_KEY is set
     if (!process.env.MASTER_KEY) {
       throw new Error(
-        'MASTER_KEY not found in environment variables.\n' +
-        'Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
+        "MASTER_KEY not found in environment variables.\n" +
+        "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
       );
     }
 
@@ -93,19 +93,19 @@ async function seedSecrets() {
       }
     }
 
-    console.log(`\n📊 Seeding Summary:`);
+    console.log("\n📊 Seeding Summary:");
     console.log(`   ✓ Successful: ${successCount}`);
     console.log(`   ✗ Failed: ${errorCount}`);
 
     if (successCount > 0) {
-      console.log(`\n⚠️  IMPORTANT SECURITY STEPS:`);
-      console.log(`   1. DELETE this script file immediately`);
-      console.log(`   2. Verify secrets with: npx tsx scripts/verify-secrets.ts`);
-      console.log(`   3. Test API: GET http://localhost:3000/api/secrets-test`);
-      console.log(`   4. Never commit raw secrets to version control`);
+      console.log("\n⚠️  IMPORTANT SECURITY STEPS:");
+      console.log("   1. DELETE this script file immediately");
+      console.log("   2. Verify secrets with: npx tsx scripts/verify-secrets.ts");
+      console.log("   3. Test API: GET http://localhost:3000/api/secrets-test");
+      console.log("   4. Never commit raw secrets to version control");
     }
   } catch (error) {
-    console.error('\n❌ Fatal error during seeding:', error);
+    console.error("\n❌ Fatal error during seeding:", error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();
@@ -115,10 +115,10 @@ async function seedSecrets() {
 // Execute seeding
 seedSecrets()
   .then(() => {
-    console.log('\n✓ Seeding completed');
+    console.log("\n✓ Seeding completed");
     process.exit(0);
   })
   .catch((error) => {
-    console.error('\n❌ Seeding failed:', error);
+    console.error("\n❌ Seeding failed:", error);
     process.exit(1);
   });

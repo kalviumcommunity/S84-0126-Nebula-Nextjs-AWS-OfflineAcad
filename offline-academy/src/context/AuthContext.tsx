@@ -11,7 +11,7 @@ export interface UserProfile {
 
 interface AuthContextType {
   user: UserProfile | null;
-  login: (user: UserProfile) => void;
+  login: (user: UserProfile, token: string) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -19,7 +19,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Lazy initialization to avoid setState-in-effect
   const [user, setUser] = useState<UserProfile | null>(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("offline_user_profile");
@@ -31,22 +30,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return null;
   });
+
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mark as loaded after hydration
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(false);
   }, []);
 
-  const login = (userProfile: UserProfile) => {
+  const login = (userProfile: UserProfile, token: string) => {
     localStorage.setItem("offline_user_profile", JSON.stringify(userProfile));
+    localStorage.setItem("offline_token", JSON.stringify(token));
     setUser(userProfile);
   };
 
   const logout = () => {
     localStorage.removeItem("offline_user_profile");
-    // Also clear cookie via API if possible, but for now just clear local state
+    localStorage.removeItem("offline_token");
     setUser(null);
   };
 

@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "@/lib/db/prisma";
 import { handleError } from "@/lib/errorHandler";
 import { sanitizeEmail, sanitizeText } from "@/lib/sanitizer";
-import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from '@/lib/security';
+import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from "@/lib/security";
 import { createRequestLogger } from "@/lib/logger";
 
 /**
@@ -18,22 +18,22 @@ import { createRequestLogger } from "@/lib/logger";
  */
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
-  const requestId = req.headers.get('x-request-id') || `signup-${Date.now()}`;
+  const requestId = req.headers.get("x-request-id") || `signup-${Date.now()}`;
   const requestLogger = createRequestLogger(requestId);
 
   try {
     const { email: rawEmail, password, name: rawName } = await req.json();
 
-    requestLogger.debug('Signup attempt received', {
-      endpoint: '/api/auth/signup',
-      method: 'POST',
+    requestLogger.debug("Signup attempt received", {
+      endpoint: "/api/auth/signup",
+      method: "POST",
     });
 
     if (!rawEmail || !password) {
       const duration = Date.now() - startTime;
-      requestLogger.warn('Signup validation failed - missing required fields', {
+      requestLogger.warn("Signup validation failed - missing required fields", {
         duration_ms: duration,
-        reason: 'missing_fields',
+        reason: "missing_fields",
       });
 
       const headers = mergeHeaders(getSecurityHeaders(), getCorsHeaders());
@@ -51,9 +51,9 @@ export async function POST(req: NextRequest) {
     // Validate sanitized email is not empty after cleaning
     if (!email) {
       const duration = Date.now() - startTime;
-      requestLogger.warn('Signup validation failed - invalid email format', {
+      requestLogger.warn("Signup validation failed - invalid email format", {
         duration_ms: duration,
-        reason: 'invalid_email',
+        reason: "invalid_email",
       });
 
       return NextResponse.json(
@@ -71,10 +71,10 @@ export async function POST(req: NextRequest) {
 
     if (existingUser) {
       const duration = Date.now() - startTime;
-      requestLogger.warn('Signup failed - user already exists', {
-        email: email.substring(0, 3) + '***',
+      requestLogger.warn("Signup failed - user already exists", {
+        email: email.substring(0, 3) + "***",
         duration_ms: duration,
-        reason: 'user_exists',
+        reason: "user_exists",
       });
 
       const headers = mergeHeaders(getSecurityHeaders(), getCorsHeaders());
@@ -101,9 +101,9 @@ export async function POST(req: NextRequest) {
     });
 
     const duration = Date.now() - startTime;
-    requestLogger.info('User signup successful', {
+    requestLogger.info("User signup successful", {
       userId: user.id,
-      email: email.substring(0, 3) + '***',
+      email: email.substring(0, 3) + "***",
       role: user.role,
       duration_ms: duration,
     });
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
     
     // Log the error before handling
     const logger = createRequestLogger(requestId);
-    logger.error('Signup error', {
+    logger.error("Signup error", {
       duration_ms: duration,
       error: error instanceof Error ? error.message : String(error),
       errorStack: error instanceof Error ? error.stack : undefined,

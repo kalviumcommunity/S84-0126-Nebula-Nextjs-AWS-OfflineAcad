@@ -3,65 +3,83 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
-import { Card, CardContent, CardHeader, CardTitle, ProgressBar, Tabs } from "@/components/ui";
-import { useEffect } from "react";
+import { Card, ProgressBar, Tabs } from "@/components/ui";
+import { useEffect, useState } from "react";
 
 export default function ProgressPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
+      return;
     }
+
+    const fetchProgress = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/progress");
+        const json = await res.json();
+        if (json.success) {
+          setData(json);
+        }
+      } catch (error) {
+        console.error("Failed to load progress", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProgress();
   }, [isAuthenticated, router]);
 
-  if (!isAuthenticated) {
-    return null;
+  if (!isAuthenticated) return null;
+
+  if (isLoading) {
+    return (
+      <div className="flex bg-[#0a0b10] min-h-screen">
+        <Sidebar />
+        <div className="flex-1 flex flex-col relative">
+           <Header />
+           <div className="flex-1 flex items-center justify-center">
+             <div className="text-indigo-500 animate-spin text-5xl">⏳</div>
+           </div>
+        </div>
+      </div>
+    );
   }
 
-  const courseProgress = [
-    { name: "Mathematics", progress: 65, lessons: 24 },
-    { name: "Science", progress: 78, lessons: 28 },
-    { name: "English", progress: 42, lessons: 15 },
-    { name: "History", progress: 55, lessons: 20 },
-    { name: "Computer Science", progress: 30, lessons: 11 },
-  ];
-
-  const weeklyStats = [
-    { day: "Mon", lessons: 3, hours: 2.5 },
-    { day: "Tue", lessons: 4, hours: 3 },
-    { day: "Wed", lessons: 2, hours: 1.5 },
-    { day: "Thu", lessons: 5, hours: 3.5 },
-    { day: "Fri", lessons: 3, hours: 2 },
-    { day: "Sat", lessons: 6, hours: 4 },
-    { day: "Sun", lessons: 2, hours: 1.5 },
-  ];
-
-  const overallProgress = (courseProgress.reduce((a, b) => a + b.progress, 0) / courseProgress.length).toFixed(1);
-  const totalLessons = courseProgress.reduce((a, b) => a + b.lessons, 0);
-  const totalHours = 48.5;
-  const achievements = 12;
+  const courseProgress = data?.courseProgress || [];
+  const weeklyStats = data?.weeklyStats || [];
+  const stats = data?.stats || {};
 
   const tabsData = [
     {
-      label: "By Course",
+      label: "Subject Mastery",
       value: "course",
       content: (
-        <div className="space-y-6">
-          {courseProgress.map((course) => (
-            <div key={course.name}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-900 dark:text-white">{course.name}</h3>
-                <span className="text-sm text-gray-600 dark:text-gray-400">{course.lessons} lessons</span>
+        <div className="grid md:grid-cols-2 gap-8">
+          {courseProgress.length > 0 ? courseProgress.map((course: any) => (
+            <Card key={course.name} variant="glass" className="p-8 border-white/10 bg-black/40 group hover:border-indigo-500/20 transition-all">
+              <div className="flex items-center gap-6 mb-8">
+                <span className="text-4xl group-hover:scale-110 transition-transform">{course.icon}</span>
+                <div className="flex-1">
+                  <h3 className="text-lg font-black text-white uppercase tracking-tight">{course.name}</h3>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{course.lessons} Modules Completed</p>
+                </div>
               </div>
               <ProgressBar
                 value={course.progress}
-                label={`${course.progress}% Complete`}
-                variant={course.progress > 70 ? "success" : course.progress > 40 ? "warning" : "primary"}
+                label="Module Mastery"
+                variant={course.progress > 70 ? "success" : "primary"}
               />
-            </div>
-          ))}
+            </Card>
+          )) : (
+            <p className="col-span-full text-center text-slate-500 italic py-10">No progress data available yet. Start a lesson!</p>
+          )}
         </div>
       ),
     },
@@ -69,50 +87,49 @@ export default function ProgressPage() {
       label: "Weekly Activity",
       value: "weekly",
       content: (
-        <div>
-          <div className="space-y-4">
-            {weeklyStats.map((stat) => (
-              <div key={stat.day} className="flex items-center gap-4">
-                <div className="w-12 text-center">
-                  <p className="font-semibold text-gray-900 dark:text-white">{stat.day}</p>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-end gap-2 h-16">
-                    <div className="flex-1 bg-indigo-500 rounded-t-lg" style={{ height: `${stat.lessons * 15}px` }}></div>
+        <Card variant="premium" className="p-10 border-white/10 bg-black/40">
+          <div className="flex items-end justify-between h-56 gap-4 px-4">
+            {weeklyStats.map((stat: any, i: number) => (
+              <div key={stat.day} className="flex-1 flex flex-col items-center gap-6 group">
+                <div className="relative w-full flex items-end justify-center">
+                  <div 
+                    className="w-full max-w-[44px] bg-indigo-600 rounded-xl transition-all duration-500 group-hover:bg-indigo-400" 
+                    style={{ height: `${stat.lessons * 24}px` }} 
+                  />
+                  <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-600 text-white text-[10px] font-black py-2 px-4 rounded-full shadow-xl">
+                    {stat.lessons} Lessons
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{stat.lessons} lessons</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{stat.hours}h</p>
-                </div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.day}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       ),
     },
     {
       label: "Achievements",
       value: "achievements",
       content: (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { icon: "🥇", name: "Math Wizard" },
-            { icon: "🔬", name: "Science Expert" },
-            { icon: "📖", name: "Reader" },
-            { icon: "🚀", name: "Fast Learner" },
-            { icon: "📈", name: "Consistent" },
-            { icon: "🏆", name: "Top Student" },
-            { icon: "⭐", name: "Star Student" },
-            { icon: "🎓", name: "Scholar" },
+            { icon: "🥇", name: "Curriculum King" },
+            { icon: "🔬", name: "Science Pro" },
+            { icon: "📖", name: "Literature Buff" },
+            { icon: "🎨", name: "Creative Mind" },
+            { icon: "📈", name: "Top Learner" },
+            { icon: "🏆", name: "Session Master" },
+            { icon: "⭐", name: "Rising Star" },
+            { icon: "🎓", name: "Graduate" },
           ].map((achievement, idx) => (
-            <div
+            <Card
               key={idx}
-              className="p-4 rounded-lg bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/30 dark:to-yellow-800/30 text-center hover:shadow-lg transition"
+              variant="glass"
+              className="p-10 text-center bg-black/40 border-white/10 group transition-all hover:bg-white/5"
             >
-              <p className="text-3xl mb-2">{achievement.icon}</p>
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{achievement.name}</p>
-            </div>
+              <div className="text-5xl mb-6 group-hover:scale-125 transition-transform duration-500">{achievement.icon}</div>
+              <p className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{achievement.name}</p>
+            </Card>
           ))}
         </div>
       ),
@@ -120,118 +137,61 @@ export default function ProgressPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex bg-[#0a0b10] min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col relative">
+        <div className="mesh-bg" />
         <Header />
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Your Progress</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                Track your learning journey and achievements
-              </p>
+        <main className="flex-1 overflow-y-auto pt-32 pb-20 px-8 relative z-10">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="space-y-2 animate-fade-in-up">
+              <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-black tracking-tighter">Learning Progress</h1>
+              <p className="text-slate-400 font-medium max-w-md">Track your academic journey and celebrate your milestones across all subjects.</p>
             </div>
 
             {/* Overall Stats */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-2">
-                    <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Overall Progress</p>
-                    <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
-                      {overallProgress}%
-                    </p>
-                    <div className="w-full h-2 bg-gray-200 rounded-full mt-4 dark:bg-gray-700">
-                      <div
-                        className="h-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full"
-                        style={{ width: `${overallProgress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-2">
-                    <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Lessons Completed</p>
-                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                      {totalLessons}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-4">
-                      Across all courses
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-2">
-                    <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Learning Hours</p>
-                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                      {totalHours}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-4">
-                      Total time invested
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-2">
-                    <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Achievements</p>
-                    <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                      {achievements}
-                    </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-4">
-                      Badges earned
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="grid md:grid-cols-4 gap-8 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+              {[
+                { label: "Overall Progress", value: stats.overallProgress, color: "text-indigo-400", sub: "Mastery Level" },
+                { label: "Lessons Finished", value: stats.totalLessons, color: "text-emerald-400", sub: "Total Completed" },
+                { label: "Study Time", value: stats.studyTime, color: "text-violet-400", sub: "This Month" },
+                { label: "Course Badges", value: stats.badges, color: "text-amber-400", sub: "Achievements" },
+              ].map((stat, i) => (
+                <Card key={i} variant="premium" className="p-8 bg-black/40 border-white/10 shadow-xl">
+                  <p className="text-[10px] uppercase font-black tracking-[0.2em] text-slate-500 mb-2">{stat.label}</p>
+                  <p className={`text-4xl font-black ${stat.color} tracking-tight`}>{stat.value}</p>
+                  <p className="text-[10px] text-slate-600 font-bold uppercase mt-4 tracking-widest">{stat.sub}</p>
+                </Card>
+              ))}
             </div>
 
-            {/* Detailed Progress */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Detailed Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs tabs={tabsData} />
-              </CardContent>
-            </Card>
+            {/* Detailed Analytics */}
+            <div className="animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+              <Tabs tabs={tabsData} />
+            </div>
 
             {/* Milestones */}
-            <Card className="mt-8">
-              <CardHeader>
-                <CardTitle>Recent Milestones</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { icon: "🏅", title: "50% Progress in Mathematics", date: "2 days ago" },
-                    { icon: "⭐", title: "Completed Chapter 5 Quiz with 95%", date: "5 days ago" },
-                    { icon: "🔥", title: "7 Day Learning Streak", date: "1 week ago" },
-                    { icon: "🎯", title: "Completed Science Course", date: "2 weeks ago" },
-                  ].map((milestone, idx) => (
-                    <div key={idx} className="flex gap-4 pb-4 border-b dark:border-gray-700 last:border-b-0">
-                      <span className="text-2xl">{milestone.icon}</span>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900 dark:text-white">{milestone.title}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{milestone.date}</p>
-                      </div>
+            <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+              <h2 className="text-3xl font-black text-white tracking-tighter uppercase font-black tracking-tighter">Recent Achievements</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { icon: "🏅", title: "Finished Algebra Chapter 1", date: "2 days ago" },
+                  { icon: "⭐", title: "Environmental Science Badge Earned", date: "5 days ago" },
+                  { icon: "🔥", title: "7 Day Study Streak!", date: "1 week ago" },
+                  { icon: "🎯", title: "Perfect Score in Biology Quiz", date: "2 weeks ago" },
+                ].map((milestone, idx) => (
+                  <Card key={idx} variant="glass" className="p-8 bg-black/40 border-white/10 flex gap-8 items-center group shadow-xl hover:border-indigo-500/20 transition-all">
+                    <span className="text-4xl group-hover:scale-110 transition-transform">{milestone.icon}</span>
+                    <div className="flex-1">
+                      <p className="text-xl font-black text-white tracking-tight group-hover:text-indigo-400 transition-colors uppercase">{milestone.title}</p>
+                      <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest mt-1">{milestone.date}</p>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         </main>
       </div>

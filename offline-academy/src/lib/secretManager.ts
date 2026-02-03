@@ -14,8 +14,8 @@
  * - ✅ Environment-specific secrets (dev/prod isolation)
  */
 
-import { prisma } from './db/prisma';
-import { decrypt } from '@/utils/crypto';
+import { prisma } from "./db/prisma";
+import { decrypt } from "@/utils/crypto";
 
 /**
  * Retrieve and decrypt a secret by key
@@ -39,7 +39,7 @@ import { decrypt } from '@/utils/crypto';
  */
 export async function getSecret(
   key: string,
-  environment: string = process.env.NODE_ENV || 'production'
+  environment: string = process.env.NODE_ENV || "production"
 ): Promise<string> {
   try {
     // Fetch encrypted secret from database
@@ -66,7 +66,7 @@ export async function getSecret(
     return decryptedValue;
   } catch (error) {
     // Re-throw with safe error message (no secret exposure)
-    if (error instanceof Error && error.message.includes('not found')) {
+    if (error instanceof Error && error.message.includes("not found")) {
       throw error;
     }
     throw new Error(`Failed to retrieve secret "${key}"`);
@@ -90,9 +90,9 @@ export async function getSecret(
 export async function setSecret(
   key: string,
   value: string,
-  environment: string = process.env.NODE_ENV || 'production'
+  environment: string = process.env.NODE_ENV || "production"
 ): Promise<void> {
-  const { encrypt } = await import('@/utils/crypto');
+  const { encrypt } = await import("@/utils/crypto");
 
   try {
     const encryptedValue = encrypt(value);
@@ -139,7 +139,7 @@ export async function listSecrets(environment?: string) {
       // ⚠️ Never include 'value' field in queries (even encrypted)
     },
     orderBy: {
-      key: 'asc',
+      key: "asc",
     },
   });
 
@@ -154,7 +154,7 @@ export async function listSecrets(environment?: string) {
  */
 export async function deleteSecret(
   key: string,
-  environment: string = process.env.NODE_ENV ?? 'production'
+  environment: string = process.env.NODE_ENV ?? "production"
 ): Promise<void> {
   await prisma.secret.delete({
     where: {

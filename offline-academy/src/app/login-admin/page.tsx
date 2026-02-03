@@ -1,17 +1,18 @@
 "use client";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, LoginInput } from "@/lib/schemas"; // Reusing schema from 2.19
+import { loginSchema, LoginInput } from "@/lib/schemas";
 import FormInput from "@/components/FormInput";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { toast } from "react-hot-toast";
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const { login } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // 1. Initialize Form with Zod Resolver
   const {
     register,
     handleSubmit,
@@ -20,73 +21,106 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  // 2. Handle Submission
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
+    const loadingToast = toast.loading("Verifying credentials...", {
+      style: { background: "#0f1117", color: "#fff", border: "1px solid rgba(255,255,255,0.1)" }
+    });
+    
     try {
-      // Simulate API Call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.warn("✅ Form Valid & Submitted:", data);
-
-      // Simulate Logic (In real app, we fetch from API)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
       if (data.email.includes("error")) {
-        throw new Error("Simulated Backend Error");
+        throw new Error("Invalid Administrator Credentials");
       }
 
-      // Use Auth Hook with full profile
-      // In a real app, this data comes from the API response
+      toast.dismiss(loadingToast);
+      toast.success("Login Successful", { icon: "✅" });
+
       login({
-        id: "mock-admin-id",
-        name: data.email.split("@")[0],
+        id: "admin-root-01",
+        name: "Head Administrator",
         email: data.email,
         role: "ADMIN"
-      });
-      alert("Login Successful!");
-    } catch {
-      setServerError("Invalid credentials or server unavailable.");
+      }, "mock-admin-access-token");
+    } catch (err: any) {
+      toast.dismiss(loadingToast);
+      setServerError(err.message || "Invalid credentials or server unavailable.");
+      toast.error("Authentication Failed", { icon: "❌" });
     }
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-950 p-8 rounded-xl shadow-lg border dark:border-gray-800">
-        <h1 className="text-2xl font-bold mb-6 text-center">Student Login</h1>
+    <main className="relative flex min-h-screen items-center justify-center bg-[#0a0b10] overflow-hidden p-6">
+      {/* Elevated Admin Mesh */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-rose-500/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+      </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Reusable Input Components */}
-          <FormInput<LoginInput>
-            label="Email Address"
-            name="email"
-            type="email"
-            register={register}
-            error={errors.email}
-            placeholder="student@kalvium.community"
-          />
+      <div className="relative z-10 w-full max-w-lg">
+        <div className="text-center mb-12 space-y-4 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 mb-4">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-400">Restricted Admin Access</span>
+          </div>
+          <h1 className="text-5xl font-black text-white tracking-tighter uppercase">Management Console</h1>
+          <p className="text-slate-500 font-bold tracking-widest uppercase text-[10px]">Administrative Portal v2.1</p>
+        </div>
 
-          <FormInput<LoginInput>
-            label="Password"
-            name="password"
-            type="password"
-            register={register}
-            error={errors.password}
-            placeholder="••••••••"
-          />
+        <Card variant="premium" className="backdrop-blur-3xl border-white/5 animate-fade-in-up shadow-2xl" style={{ animationDelay: "0.1s" }}>
+          <CardContent className="p-12">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              <div className="space-y-6">
+                <FormInput<LoginInput>
+                  label="Administrator Email"
+                  name="email"
+                  type="email"
+                  register={register}
+                  error={errors.email}
+                  placeholder="admin@offline-academy.com"
+                />
 
-          {serverError && (
-            <div className="p-3 mb-4 text-sm text-red-500 bg-red-50 rounded border border-red-200">
-              {serverError}
-            </div>
-          )}
+                <FormInput<LoginInput>
+                  label="Password"
+                  name="password"
+                  type="password"
+                  register={register}
+                  error={errors.password}
+                  placeholder="••••••••"
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "Verifying..." : "Sign In"}
+              {serverError && (
+                <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl animate-shake">
+                  <p className="text-xs font-bold text-rose-400 uppercase tracking-widest text-center">
+                    {serverError}
+                  </p>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full h-14 text-xs font-black uppercase tracking-[0.3em] shadow-2xl shadow-indigo-500/20"
+                isLoading={isSubmitting}
+              >
+                Secure Login
+              </Button>
+
+              <p className="text-center text-[10px] text-slate-600 font-bold uppercase tracking-widest pt-4 leading-relaxed">
+                All administrative activities are recorded for security and auditing purposes.
+              </p>
+            </form>
+          </CardContent>
+        </Card>
+
+        <div className="mt-12 text-center animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+          <button onClick={() => window.history.back()} className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 hover:text-white transition-colors">
+            ← Return to Main Website
           </button>
-        </form>
+        </div>
       </div>
     </main>
   );

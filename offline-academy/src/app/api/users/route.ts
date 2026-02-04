@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import redis from "@/lib/redis";
 import { handleError } from "@/lib/errorHandler";
-import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from "@/lib/security";
+import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from '@/lib/security';
 
 /**
  * OWASP Security: Users API Route

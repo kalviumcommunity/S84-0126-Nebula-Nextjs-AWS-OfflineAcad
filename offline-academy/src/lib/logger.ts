@@ -10,7 +10,7 @@
  * - Automatic timestamp and environment info
  */
 
-export type LogLevel = "debug" | "info" | "warn" | "error";
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogEntry {
   level: LogLevel;
@@ -32,7 +32,7 @@ class StructuredLogger {
 
   constructor(config?: LoggerConfig) {
     this.config = {
-      environment: process.env.NODE_ENV || "development",
+      environment: process.env.NODE_ENV || 'development',
       ...config,
     };
   }
@@ -63,7 +63,7 @@ class StructuredLogger {
       level,
       timestamp: new Date().toISOString(),
       message,
-      service: "nextjs-offline-academy",
+      service: 'nextjs-offline-academy',
       environment: this.config.environment as string,
     };
 
@@ -84,7 +84,7 @@ class StructuredLogger {
    * Log at DEBUG level
    */
   debug(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog("debug", message, meta);
+    const logEntry = this.formatLog('debug', message, meta);
     console.log(JSON.stringify(logEntry));
   }
 
@@ -92,7 +92,7 @@ class StructuredLogger {
    * Log at INFO level
    */
   info(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog("info", message, meta);
+    const logEntry = this.formatLog('info', message, meta);
     console.log(JSON.stringify(logEntry));
   }
 
@@ -100,7 +100,7 @@ class StructuredLogger {
    * Log at WARN level
    */
   warn(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog("warn", message, meta);
+    const logEntry = this.formatLog('warn', message, meta);
     console.warn(JSON.stringify(logEntry));
   }
 
@@ -108,7 +108,7 @@ class StructuredLogger {
    * Log at ERROR level
    */
   error(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog("error", message, meta);
+    const logEntry = this.formatLog('error', message, meta);
     console.error(JSON.stringify(logEntry));
   }
 

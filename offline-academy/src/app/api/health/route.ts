@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from "@/lib/security";
-import { logger, createRequestLogger } from "@/lib/logger";
+import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from '@/lib/security';
+import { logger, createRequestLogger } from '@/lib/logger';
 
 /**
  * Health Check Endpoint
@@ -10,15 +10,15 @@ import { logger, createRequestLogger } from "@/lib/logger";
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  const requestId = request.headers.get("x-request-id") || `health-${Date.now()}`;
+  const requestId = request.headers.get('x-request-id') || `health-${Date.now()}`;
   const requestLogger = createRequestLogger(requestId);
 
   try {
     // Log incoming request
-    requestLogger.info("Health check request received", {
-      endpoint: "/api/health",
-      method: "GET",
-      userAgent: request.headers.get("user-agent"),
+    requestLogger.info('Health check request received', {
+      endpoint: '/api/health',
+      method: 'GET',
+      userAgent: request.headers.get('user-agent'),
     });
 
     // Check database connectivity
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const dbDuration = Date.now() - dbCheckStart;
 
     // Log successful database check
-    requestLogger.debug("Database connectivity verified", {
+    requestLogger.debug('Database connectivity verified', {
       duration_ms: dbDuration,
     });
 
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const headers = mergeHeaders(getSecurityHeaders(), getCorsHeaders());
 
     // Log successful response
-    requestLogger.info("Health check completed successfully", {
+    requestLogger.info('Health check completed successfully', {
       status: 200,
       duration_ms: duration,
       db_duration_ms: dbDuration,
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
 
     // Log error with full details
-    requestLogger.error("Health check failed", {
+    requestLogger.error('Health check failed', {
       status: 500,
       duration_ms: duration,
       error: error instanceof Error ? error.message : String(error),

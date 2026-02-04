@@ -7,7 +7,7 @@ const CSP = [
   "img-src 'self' data:",
   "font-src 'self' https://fonts.gstatic.com",
   "connect-src 'self' https://api.github.com",
-].join("; ");
+].join('; ');
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -15,31 +15,31 @@ const nextConfig: NextConfig = {
     return [
       {
         // Apply these headers to all routes in the application
-        source: "/(.*)",
+        source: '/(.*)',
         headers: [
           {
-            key: "Strict-Transport-Security",
-            value: "max-age=63072000; includeSubDomains; preload",
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
-            key: "Content-Security-Policy",
+            key: 'Content-Security-Policy',
             value: CSP,
           },
           {
-            key: "X-Frame-Options",
-            value: "DENY",
+            key: 'X-Frame-Options',
+            value: 'DENY',
           },
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
           },
           {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
           },
           {
-            key: "Permissions-Policy",
-            value: "geolocation=(), microphone=()",
+            key: 'Permissions-Policy',
+            value: 'geolocation=(), microphone=()',
           },
         ],
       },

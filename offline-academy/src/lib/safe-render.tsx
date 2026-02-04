@@ -69,7 +69,7 @@ export function escapeHtml(text: string): string {
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
-    "\"": "&quot;",
+    '"': "&quot;",
     "'": "&#x27;",
     "/": "&#x2F;",
   };

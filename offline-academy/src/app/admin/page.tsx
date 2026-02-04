@@ -2,9 +2,6 @@
 import RoleGuard from "@/components/RoleGuard";
 import { Role } from "@prisma/client";
 import { useState } from "react";
-import { Card, CardContent, Button } from "@/components/ui";
-import Header from "@/components/layout/Header";
-import Sidebar from "@/components/layout/Sidebar";
 
 export default function AdminPanel() {
     const [response, setResponse] = useState<string>("");
@@ -14,83 +11,46 @@ export default function AdminPanel() {
             const res = await fetch("/api/admin/delete-user", { method: "POST" });
             const data = await res.json();
             setResponse(JSON.stringify(data, null, 2));
+
+            if (!res.ok) {
+                alert("Access Denied: " + (data.message || res.statusText));
+            } else {
+                alert(data.message);
+            }
         } catch (e: any) {
-            setResponse("Execution Critical Failure: " + e.message);
+            alert("Error: " + e.message);
         }
     };
 
     return (
-        <div className="flex bg-[#0a0b10] min-h-screen">
-          <Sidebar />
+        <div className="p-8 space-y-8">
+            <h1 className="text-3xl font-bold">RBAC Control Panel</h1>
 
-          <div className="flex-1 flex flex-col relative">
-            <div className="mesh-bg" />
-            <Header />
+            <div className="p-6 border rounded-xl bg-gray-50 dark:bg-gray-900">
+                <h2 className="text-xl font-bold mb-4">Dangerous Zone</h2>
 
-            <main className="flex-1 overflow-y-auto pt-32 pb-20 px-8 relative z-10">
-              <div className="max-w-4xl mx-auto space-y-12">
-                <div className="space-y-2 animate-fade-in-up">
-                  <h1 className="text-5xl font-black text-white tracking-tighter uppercase font-black tracking-tighter">Management Console</h1>
-                  <p className="text-slate-400 font-medium max-w-md">Administrative control center for platform permissions and database maintenance.</p>
-                </div>
-
-                {/* Admin Zone */}
-                <Card variant="premium" className="overflow-hidden border-white/10 bg-black/40 shadow-2xl animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-                  <div className="p-10 space-y-8">
-                    <div className="flex items-center gap-3 px-5 py-2 rounded-full bg-rose-500/10 border border-rose-500/20 w-fit">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-rose-400">Restricted Administration</span>
-                    </div>
-
-                    <RoleGuard allowedRoles={[Role.ADMIN]} fallback={
-                      <div className="p-12 rounded-[2.5rem] bg-white/5 border border-white/5 text-center space-y-6">
-                        <div className="text-5xl">🔐</div>
-                        <p className="text-slate-400 font-medium italic">Administrative clearance required for this sector.</p>
-                      </div>
-                    }>
-                      <div className="space-y-8">
-                        <div className="p-8 rounded-[2rem] bg-rose-500/[0.03] border border-rose-500/10 space-y-6">
-                          <h3 className="text-lg font-black text-white uppercase tracking-tight">System Reset Protocol</h3>
-                          <p className="text-sm text-rose-300/40 font-bold leading-relaxed">Warning: This will reset all student progress and activity logs. This action is permanent and cannot be undone.</p>
-                          <Button 
-                            variant="danger" 
+                {/* Only Admins see this button */}
+                <RoleGuard allowedRoles={[Role.ADMIN]} fallback={<p className="text-red-500">⛔ You are not authorized to view these controls.</p>}>
+                    <div className="flex flex-col gap-4">
+                        <button
                             onClick={testAdminAction}
-                            className="text-[10px] font-black uppercase tracking-widest h-12 px-10 shadow-xl shadow-rose-500/20"
-                          >
-                            Execute Reset
-                          </Button>
-                        </div>
-                        {response && (
-                          <div className="p-6 rounded-2xl bg-black/60 border border-white/10">
-                            <pre className="text-[10px] text-emerald-400 font-mono tracking-tight leading-relaxed overflow-x-auto">{response}</pre>
-                          </div>
-                        )}
-                      </div>
-                    </RoleGuard>
-                  </div>
-                </Card>
-
-                {/* Teacher Zone */}
-                <Card variant="glass" className="overflow-hidden border-white/10 bg-black/40 shadow-2xl animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-                  <div className="p-10 space-y-8">
-                    <div className="flex items-center gap-3 px-5 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 w-fit">
-                      <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Curriculum Management</span>
+                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition w-fit"
+                        >
+                            🗑️ Delete User Database
+                        </button>
+                        {response && <pre className="text-xs bg-black text-white p-2 rounded">{response}</pre>}
                     </div>
+                </RoleGuard>
+            </div>
 
-                    <RoleGuard allowedRoles={[Role.ADMIN, Role.TEACHER]} fallback={
-                      <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest px-6 opacity-50">Standard Student Access Only</p>
-                    }>
-                      <div className="flex flex-col md:flex-row gap-6">
-                        <Button variant="primary" className="h-14 px-10 text-[10px] font-black uppercase tracking-widest">New Module</Button>
-                        <Button variant="secondary" className="h-14 px-10 text-[10px] font-black uppercase tracking-widest">Audit Analytics</Button>
-                      </div>
-                    </RoleGuard>
-                  </div>
-                </Card>
-              </div>
-            </main>
-          </div>
+            <div className="p-6 border rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                <h2 className="text-xl font-bold mb-4">Teacher Zone</h2>
+                <RoleGuard allowedRoles={[Role.ADMIN, Role.TEACHER]} fallback={<p className="text-gray-500">Teacher access only.</p>}>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                        📝 Create New Lesson
+                    </button>
+                </RoleGuard>
+            </div>
         </div>
     );
 }

@@ -16,29 +16,26 @@ export const Tabs = ({ tabs, defaultTab }: TabsProps) => {
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.value || "");
 
   return (
-    <div className="w-full space-y-8">
+    <div>
       {/* Tab Headers */}
-      <div className="inline-flex items-center p-1.5 bg-white/5 backdrop-blur-xl border border-white/5 rounded-2xl">
+      <div className="flex gap-1 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-t-lg p-1">
         {tabs.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
-            className={`relative px-6 py-2.5 text-sm font-bold tracking-tight rounded-xl transition-all duration-500 overflow-hidden ${
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${
               activeTab === tab.value
-                ? "text-white shadow-2xl"
-                : "text-slate-500 hover:text-slate-300"
+                ? "bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
             }`}
           >
-            {activeTab === tab.value && (
-              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 to-violet-600 animate-fade-in" />
-            )}
-            <span className="relative z-10">{tab.label}</span>
+            {tab.label}
           </button>
         ))}
       </div>
 
       {/* Tab Content */}
-      <div className="animate-fade-in-up">
+      <div className="bg-white dark:bg-gray-800 rounded-b-lg p-6">
         {tabs.find((tab) => tab.value === activeTab)?.content}
       </div>
     </div>

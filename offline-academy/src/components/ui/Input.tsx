@@ -7,25 +7,16 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className = "", label, error, ...props }, ref) => (
-    <div className="w-full space-y-2 group">
-      {label && (
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 group-focus-within:text-indigo-400 transition-colors">
-          {label}
-        </label>
-      )}
-      <div className="relative">
-        <input
-          ref={ref}
-          className={`w-full bg-white/5 border border-white/5 px-4 py-3 rounded-xl text-white font-light placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.07] transition-all duration-300 ${
-            error ? "border-rose-500/50 bg-rose-500/5" : ""
-          } ${className}`}
-          {...props}
-        />
-        {error && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
-        )}
-      </div>
-      {error && <p className="text-[10px] text-rose-400 font-medium tracking-wide translate-x-1">{error}</p>}
+    <div className="w-full">
+      {label && <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{label}</label>}
+      <input
+        ref={ref}
+        className={`w-full px-4 py-2 border rounded-lg bg-white text-gray-900 placeholder-gray-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white dark:border-gray-600 ${
+          error ? "border-red-500 focus:ring-red-500" : "border-gray-300"
+        } ${className}`}
+        {...props}
+      />
+      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
     </div>
   )
 );

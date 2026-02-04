@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyToken, createAccessToken } from "@/lib/jwt";
-import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from "@/lib/security";
+import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from '@/lib/security';
 
 export async function POST() {
   const cookieStore = await cookies();

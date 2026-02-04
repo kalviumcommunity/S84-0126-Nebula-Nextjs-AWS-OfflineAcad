@@ -355,16 +355,47 @@ npm run dev
 
 ### Available Scripts
 
+
+## Security Headers
+
+This project enforces HTTPS and configures several HTTP security headers to reduce attack surface and improve client security.
+
+- **HSTS (Strict-Transport-Security):** Forces browsers to use HTTPS for future requests. Configured for 2 years and includes subdomains (`max-age=63072000; includeSubDomains; preload`).
+- **CSP (Content-Security-Policy):** Restricts trusted sources for scripts, styles, images, fonts, and connections to mitigate XSS. A conservative CSP is applied by default — adjust `next.config.ts` or `src/lib/security.ts` when integrating third-party tools.
+- **CORS (Access-Control-Allow-Origin):** API routes return CORS headers that restrict access to the frontend domain (set `NEXT_PUBLIC_APP_URL` in production). Avoid `*` in production.
+- **Other headers:** `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy` for feature control.
+
 ```bash
-npm run dev         # Start development server (port 3000)
-npm run build       # Create production build
-npm run start       # Start production server
+
+
 npm run lint        # Run ESLint
-npx prisma studio   # Open database GUI
+
+
+```js
+// next.config.ts headers()
+{
+  key: 'Strict-Transport-Security',
+  value: 'max-age=63072000; includeSubDomains; preload',
+}
+
+{
+  key: 'Content-Security-Policy',
+  value: "default-src 'self'; script-src 'self' https://apis.google.com; img-src 'self' data:; style-src 'self' 'unsafe-inline';",
+}
+```
+
+- API CORS example (added to responses):
+
+```js
+res.setHeader('Access-Control-Allow-Origin', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+res.setHeader('Access-Control-Allow-Credentials', 'true');
+```
+
 ```
 
 ---
-
 ## Contributing
 
 1. Follow existing code style (enforced by ESLint/Prettier)

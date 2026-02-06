@@ -1,16 +1,18 @@
 "use client";
+
 import { useState, FormEvent, ChangeEvent } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 
 export default function SignupPage() {
   const router = useRouter();
   const { login } = useAuth();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +25,7 @@ export default function SignupPage() {
     setError("");
 
     if (!name || !email || !password) {
-      setError("Please fill in all fields");
+      setError("All fields are required");
       return;
     }
 
@@ -33,8 +35,8 @@ export default function SignupPage() {
     }
 
     setIsLoading(true);
-    toast.loading("Creating account...");
-    
+    toast.loading("Creating your account...");
+
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -49,167 +51,174 @@ export default function SignupPage() {
       }
 
       toast.dismiss();
-      toast.success("Account created successfully!");
+      toast.success("Welcome to Offline Academy ✨");
 
-      // Login user with returned data
       login({
         id: result.user.id,
         name: result.user.name,
         email: result.user.email,
-        role: result.user.role
+        role: result.user.role,
       });
 
-      // Redirect based on role
       router.push(result.user.role === "ADMIN" ? "/admin" : "/dashboard");
-    } catch (error: any) {
+    } catch (err: any) {
       toast.dismiss();
-      const errorMessage = error.message || "Signup failed. Please try again.";
-      
-      // Check if it's a database connection error
-      if (errorMessage.includes("database") || errorMessage.includes("reach")) {
-        setError("Database is currently unavailable. Please wait a moment and try again.");
-        toast.error("Database connection issue. Retrying...", { duration: 4000 });
-      } else {
-        setError(errorMessage);
-        toast.error(errorMessage);
-      }
+      setError(err.message || "Something went wrong");
+      toast.error(err.message || "Signup failed");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute top-0 left-0 w-full h-full -z-10">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px] animate-float"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
+    <>
+      {/* Global Royal Styles */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Raleway:wght@400;500&display=swap');
 
-      <div className="w-full max-w-md animate-fade-in-up">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-600 text-white rounded-2xl font-bold shadow-xl group-hover:scale-110 transition-transform">
-              O
-            </div>
-            <span className="text-3xl font-black tracking-tight text-gradient">
-              OfflineAcad
-            </span>
-          </Link>
+        body {
+          background: radial-gradient(circle at top left, #1a0f0f, #000);
+          color: #f5f5f5;
+          font-family: 'Raleway', sans-serif;
+          margin: 0;
+          height: 100vh;
+          overflow: hidden; /* Prevent scrolling */
+        }
+
+        .luxury-serif {
+          font-family: 'Cormorant Garamond', serif;
+        }
+      `}</style>
+
+      <div className="h-screen flex flex-col items-center justify-center px-3 relative overflow-hidden">
+        {/* Background royal glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-600/20 blur-[160px]" />
+          <div className="absolute bottom-1/4 right-1/2 translate-x-1/2 w-[400px] h-[400px] bg-amber-400/10 blur-[140px]" />
         </div>
 
-        {/* Signup Card */}
-        <Card className="card-premium !p-0 overflow-hidden border-none shadow-2xl">
-          <div className="h-2 bg-gradient-to-r from-indigo-600 to-blue-600"></div>
-          <CardHeader className="p-8 pb-0 border-none">
-            <CardTitle className="text-3xl font-black text-center">Create Account</CardTitle>
-            <p className="text-center text-gray-500 dark:text-gray-400 mt-2 font-medium">
-              Join 50,000+ students learning offline
-            </p>
-          </CardHeader>
+        <div className="w-full max-w-md relative z-10">
+          {/* Logo */}
+          <div className="text-center mb-6">
+            <Link href="/" className="inline-flex items-center gap-3">
+            
+        
+            </Link>
+          </div>
 
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <Input
-                type="text"
-                label="Full Name"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-                className="!bg-gray-50 dark:!bg-gray-900/50 border-none focus:ring-2 focus:ring-indigo-500"
-              />
+          {/* Card */}
+          <Card className= " bg-white/[0.04] border border-amber-400/20 backdrop-blur-xl shadow-2xl rounded-2xl">
+            <CardContent className="p-5">
+              <h1 className="luxury-serif text-3xl font-light text-center  text-amber-400">
+                Create your account
+              </h1>
+              <p className="text-center text-neutral-400 text-sm mb-6">
+                Begin your journey toward refined learning
+              </p>
 
-              <Input
-                type="email"
-                label="Email Address"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                className="!bg-gray-50 dark:!bg-gray-900/50 border-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  label="Full Name"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setName(e.target.value)
+                  }
+                  className="bg-black/30 border-amber-400/30 text-amber-50 focus:ring-amber-400"
+                />
 
-              <Input
-                type="password"
-                label="Password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                className="!bg-gray-50 dark:!bg-gray-900/50 border-none focus:ring-2 focus:ring-indigo-500"
-              />
+                <Input
+                  type="email"
+                  label="Email Address"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setEmail(e.target.value)
+                  }
+                  className="bg-black/30 border-amber-400/30 text-amber-50 focus:ring-amber-400"
+                />
 
-              {/* Role Selection */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
-                  I am signing up as
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setRole("STUDENT")}
-                    className={`p-6 rounded-xl border-2 transition-all ${
-                      role === "STUDENT"
-                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg"
-                        : "border-gray-200 dark:border-gray-700 hover:border-indigo-400"
-                    }`}
-                  >
-                    <div className="text-4xl mb-2">🎓</div>
-                    <div className="text-base font-bold">Student</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Learn courses</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole("ADMIN")}
-                    className={`p-6 rounded-xl border-2 transition-all ${
-                      role === "ADMIN"
-                        ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg"
-                        : "border-gray-200 dark:border-gray-700 hover:border-indigo-400"
-                    }`}
-                  >
-                    <div className="text-4xl mb-2">👑</div>
-                    <div className="text-base font-bold">Admin</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Manage platform</div>
-                  </button>
-                </div>
-              </div>
+                <Input
+                  type="password"
+                  label="Password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setPassword(e.target.value)
+                  }
+                  className="bg-black/30 border-amber-400/30 text-amber-50 focus:ring-amber-400"
+                />
 
-              {error && (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 animate-pulse">
-                  <p className="text-red-700 dark:text-red-400 text-sm font-bold flex items-center gap-2">
-                    <span>⚠️</span> {error}
+                {/* Role selection */}
+                <div>
+                  <p className="text-xs tracking-widest uppercase text-neutral-400 mb-2">
+                    Choose your path
                   </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {["STUDENT", "ADMIN"].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRole(r as any)}
+                        className={`p-4 rounded-lg border transition-all text-left ${
+                          role === r
+                            ? "border-amber-400 bg-amber-400/10 shadow-lg"
+                            : "border-white/10 hover:border-amber-200/30"
+                        }`}
+                      >
+                        <div className="luxury-serif text-lg mb-1 text-amber-400">
+                          {r === "STUDENT" ? "Student" : "Administrator"}
+                        </div>
+                        <div className="text-xs text-neutral-400">
+                          {r === "STUDENT"
+                            ? "Access curated courses"
+                            : "Manage and curate content"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
 
-              <Button type="submit" isLoading={isLoading} className="w-full !py-4 !rounded-xl shadow-lg shadow-indigo-500/25 text-lg font-black">
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </Button>
-            </form>
+                {error && (
+                  <div className="border border-red-500/30 bg-red-500/10 rounded-lg p-3 text-sm text-red-300">
+                    {error}
+                  </div>
+                )}
 
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
-                <span className="px-4 bg-white dark:bg-gray-800 text-gray-400">
-                  Or
-                </span>
-              </div>
-            </div>
+                <Button
+                  type="submit"
+                  isLoading={isLoading}
+                  className="w-full py-3 text-sm tracking-[0.2em] uppercase bg-gradient-to-r from-amber-400 to-yellow-500 text-black hover:from-amber-300 hover:to-yellow-400 rounded-lg shadow-xl"
+                >
+                  {isLoading ? "Creating..." : "Create Account"}
+                </Button>
+              </form>
 
-            <p className="text-center text-xs text-gray-500 dark:text-gray-400 px-4 leading-relaxed">
-              By creating an account, you agree to our <Link href="/" className="text-indigo-600 font-bold">Terms of Service</Link> and <Link href="/" className="text-indigo-600 font-bold">Privacy Policy</Link>.
-            </p>
-          </CardContent>
-        </Card>
+              <p className="text-xs text-neutral-400 text-center mt-4">
+                By continuing, you agree to our{" "}
+                <Link href="/" className="text-amber-400 hover:underline">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link href="/" className="text-amber-400 hover:underline">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            </CardContent>
+          </Card>
 
-        <p className="text-center text-gray-500 dark:text-gray-400 mt-10 font-medium">
-          Already have an account?{" "}
-          <Link href="/login" className="font-black text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 underline underline-offset-4">
-            Sign in
-          </Link>
-        </p>
+          <p className="text-center text-sm text-neutral-400 mt-6 mb-10">
+            Already a member?{" "}
+            <Link
+              href="/login"
+              className="text-amber-400 hover:underline underline-offset-4"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

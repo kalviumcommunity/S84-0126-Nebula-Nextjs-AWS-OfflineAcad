@@ -17,7 +17,6 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // Initialize Form with Zod Resolver
   const {
     register,
     handleSubmit,
@@ -26,7 +25,6 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  // Handle Submission
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
     toast.loading("Signing in...");
@@ -45,14 +43,9 @@ export default function LoginPage() {
       }
 
       toast.dismiss();
-      console.warn("Login Successful:", result.user);
-
-      // result.user contains { id, email, role }
       login(result.user);
-
       toast.success("Login successful!");
-      
-      // Redirect based on role
+
       router.push(result.user.role === "ADMIN" ? "/admin" : "/dashboard");
     } catch (error: any) {
       toast.dismiss();
@@ -62,117 +55,131 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute top-0 left-0 w-full h-full -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px] animate-float"></div>
-        <div
-          className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-float"
-          style={{ animationDelay: "2s" }}
-        ></div>
-      </div>
+    <>
+      {/* Global Royal Styles */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Raleway:wght@400;500&display=swap');
 
-      <div className="w-full max-w-md animate-fade-in-up">
-        {/* Logo */}
-        <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-600 text-white rounded-2xl font-bold shadow-xl group-hover:scale-110 transition-transform">
-              O
-            </div>
-            <span className="text-3xl font-black tracking-tight text-gradient">OfflineAcad</span>
-          </Link>
+        body {
+          background: radial-gradient(circle at top left, #1a0f0f, #000);
+          color: #f5f5f5;
+          font-family: 'Raleway', sans-serif;
+          margin: 0;
+          height: 100vh;
+          overflow: hidden; /* Prevent scrolling */
+        }
+
+        .luxury-serif {
+          font-family: 'Cormorant Garamond', serif;
+        }
+      `}</style>
+
+      <div className="h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden">
+        {/* Background royal glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-600/20 blur-[160px]" />
+          <div className="absolute bottom-1/4 right-1/2 translate-x-1/2 w-[400px] h-[400px] bg-amber-400/10 blur-[140px]" />
         </div>
 
-        {/* Login Card */}
-        <Card className="card-premium !p-0 overflow-hidden border-none shadow-2xl">
-          <div className="h-2 bg-gradient-to-r from-indigo-600 to-blue-600"></div>
-          <CardHeader className="p-8 pb-0 border-none">
-            <CardTitle className="text-3xl font-black text-center">Welcome Back</CardTitle>
-            <p className="text-center text-gray-500 dark:text-gray-400 mt-2 font-medium">
-              Sign in to your account to continue learning
-            </p>
-          </CardHeader>
+        <div className="w-full max-w-md relative z-10">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-flex items-center gap-3">
+            
+            
+            </Link>
+          </div>
 
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* React Hook Form + Zod Validation */}
-              <FormInput<LoginInput>
-                label="Email Address"
-                name="email"
-                type="email"
-                register={register}
-                error={errors.email}
-                placeholder="you@example.com"
-              />
+          {/* Login Card */}
+          <Card className="bg-white/[0.05] border border-amber-400/20 backdrop-blur-xl shadow-2xl rounded-2xl">
+            <CardHeader className="p-6 pb-0 border-none text-center">
+              <CardTitle className="luxury-serif text-3xl font-light text-amber-200">
+                Welcome Back
+              </CardTitle>
+              <p className="text-neutral-400 text-sm mt-2">
+                Sign in to your account to continue learning
+              </p>
+            </CardHeader>
 
-              <FormInput<LoginInput>
-                label="Password"
-                name="password"
-                type="password"
-                register={register}
-                error={errors.password}
-                placeholder="••••••••"
-              />
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <FormInput<LoginInput>
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  register={register}
+                  error={errors.email}
+                  placeholder="you@example.com"
+                  className="bg-black/30 border-amber-400/30 text-amber-50 focus:ring-amber-400"
+                />
 
-              <div className="flex justify-end">
-                <Link
-                  href="/"
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+                <FormInput<LoginInput>
+                  label="Password"
+                  name="password"
+                  type="password"
+                  register={register}
+                  error={errors.password}
+                  placeholder="••••••••"
+                  className="bg-black/30 border-amber-400/30 text-amber-50 focus:ring-amber-400"
+                />
 
-              {serverError && (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
-                  <p className="text-red-700 dark:text-red-400 text-sm font-bold flex items-center gap-2">
-                    <span>⚠️</span> {serverError}
-                  </p>
+                <div className="flex justify-end">
+                  <Link
+                    href="/"
+                    className="text-xs font-semibold text-amber-400 hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
-              )}
+
+                {serverError && (
+                  <div className="border border-red-500/30 bg-red-500/10 rounded-lg p-3 text-sm text-red-300">
+                    ⚠️ {serverError}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  isLoading={isSubmitting}
+                  className="w-full py-3 text-sm tracking-[0.2em] uppercase bg-gradient-to-r from-amber-400 to-yellow-500 text-black hover:from-amber-300 hover:to-yellow-400 rounded-lg shadow-xl"
+                >
+                  {isSubmitting ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase tracking-widest font-semibold">
+                  <span className="px-4  text-neutral-500">OR</span>
+                </div>
+              </div>
 
               <Button
-                type="submit"
-                isLoading={isSubmitting}
-                className="w-full !py-4 !rounded-xl shadow-lg shadow-indigo-500/25 text-lg font-black"
+                type="button"
+                variant="outline"
+                className="w-full py-3 rounded-lg border border-amber-400/30 hover:bg-amber-400/10 text-amber-100 font-semibold"
+                onClick={() => {
+                  toast("Please sign up or use real credentials for RBAC demo", { icon: "ℹ️" });
+                }}
               >
-                {isSubmitting ? "Signing in..." : "Sign In"}
+                Try Demo Account
               </Button>
-            </form>
+            </CardContent>
+          </Card>
 
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
-                <span className="px-4 bg-white dark:bg-gray-800 text-gray-400">Or</span>
-              </div>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full !py-4 !rounded-xl border-2 border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 font-bold"
-              onClick={() => {
-                // Quick fill for demo
-                toast("Please sign up or use real credentials for RBAC demo", { icon: "ℹ️" });
-              }}
+          <p className="text-center text-sm text-neutral-400 mt-6">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="text-amber-400 hover:underline underline-offset-4"
             >
-              Try Demo Account
-            </Button>
-          </CardContent>
-        </Card>
-
-        <p className="text-center text-gray-500 dark:text-gray-400 mt-10 font-medium">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-black text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 underline underline-offset-4"
-          >
-            Sign up
-          </Link>
-        </p>
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

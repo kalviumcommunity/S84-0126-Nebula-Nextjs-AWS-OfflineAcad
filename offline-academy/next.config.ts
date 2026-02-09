@@ -11,6 +11,7 @@ const CSP = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  
   async headers() {
     return [
       {

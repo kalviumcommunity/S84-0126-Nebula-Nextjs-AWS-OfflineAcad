@@ -6,37 +6,33 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const navItems = [
-    { 
-      href: "/dashboard", 
+    {
+      href: "/dashboard",
       label: "Dashboard",
       icon: "📊"
     },
-    { 
-      href: "/courses", 
+    {
+      href: "/courses",
       label: "Courses",
       icon: "📚"
     },
-    { 
-      href: "/lessons", 
+    {
+      href: "/lessons",
       label: "Lessons",
       icon: "✏️"
     },
-    { 
-      href: "/progress", 
+    {
+      href: "/progress",
       label: "My Progress",
       icon: "📈"
     },
-    { 
-      href: "/downloads", 
-      label: "Downloads",
-      icon: "📥"
-    },
-    { 
-      href: "/settings", 
+    {
+      href: "/settings",
       label: "Settings",
       icon: "⚙️"
     },
   ];
+
 
   return (
     <aside className="w-64 h-screen sticky top-0 bg-gray-900 text-white overflow-y-auto border-r border-gray-800 shadow-lg">
@@ -47,11 +43,10 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                isActive
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
                   ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white"
                   : "text-gray-300 hover:bg-gray-800"
-              }`}
+                }`}
             >
               <span className="text-xl">{item.icon}</span>
               <span className="font-medium">{item.label}</span>

@@ -54,11 +54,17 @@ export default function Header() {
             </Link>
             {isAuthenticated && (
               <>
-                <Link href="/dashboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group">
+                <Link 
+                  href={user?.role === "ADMIN" ? "/admin" : "/dashboard"} 
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group"
+                >
                   Dashboard
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-purple-700 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-                <Link href="/courses" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group">
+                <Link 
+                  href={user?.role === "ADMIN" ? "/admin/courses" : "/courses"} 
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group"
+                >
                   Courses
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-purple-700 group-hover:w-full transition-all duration-300"></span>
                 </Link>

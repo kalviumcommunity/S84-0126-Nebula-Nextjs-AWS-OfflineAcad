@@ -58,16 +58,18 @@ export async function PUT(
     const body = await request.json();
     const { title, description, subject, level, image, isPublished } = body;
 
+    // Build update data object with only provided fields
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (subject !== undefined) updateData.subject = subject;
+    if (level !== undefined) updateData.level = level;
+    if (image !== undefined) updateData.image = image;
+    if (isPublished !== undefined) updateData.isPublished = isPublished;
+
     const course = await prisma.course.update({
       where: { id },
-      data: {
-        title,
-        description,
-        subject,
-        level,
-        image,
-        isPublished,
-      },
+      data: updateData,
     });
 
     return NextResponse.json(course);

@@ -1,35 +1,81 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RoleGuard from "@/components/RoleGuard";
 import { Role } from "@prisma/client";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@/components/ui";
+import { toast } from "react-hot-toast";
+
+interface AdminStats {
+  totalCourses: number;
+  totalLessons: number;
+  totalEnrollments: number;
+  activeStudents: number;
+}
 
 export default function AdminDashboard() {
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch("/api/admin/stats");
+      if (!response.ok) throw new Error("Failed to fetch statistics");
+      const data = await response.json();
+      setStats(data);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load statistics");
+      console.error("Error fetching admin stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const adminStats = [
-    { label: "Total Courses", value: "12", icon: "📚", color: "indigo", link: "/admin/courses" },
-    { label: "Total Lessons", value: "156", icon: "✏️", color: "green", link: "/admin/lessons" },
-    { label: "Active Students", value: "2,547", icon: "👥", color: "purple", link: "/admin/users" },
-    { label: "Enrollments", value: "8,231", icon: "📊", color: "yellow", link: "/admin/enrollments" },
+    {
+      label: "Total Courses",
+      value: stats?.totalCourses?.toString() || "0",
+      icon: "📚",
+      color: "indigo",
+      link: "/admin/courses"
+    },
+    {
+      label: "Total Lessons",
+      value: stats?.totalLessons?.toString() || "0",
+      icon: "✏️",
+      color: "green",
+      link: "/admin/lessons"
+    },
+    {
+      label: "Active Students",
+      value: stats?.activeStudents?.toString() || "0",
+      icon: "👥",
+      color: "purple",
+      link: "/admin/users"
+    },
+    {
+      label: "Enrollments",
+      value: stats?.totalEnrollments?.toString() || "0",
+      icon: "📊",
+      color: "yellow",
+      link: "/admin/enrollments"
+    },
   ];
 
   const quickActions = [
     { label: "Create Course", href: "/admin/courses/new", icon: "➕", color: "bg-indigo-600" },
-    { label: "Create Lesson", href: "/admin/lessons/new", icon: "✍️", color: "bg-green-600" },
-    { label: "Manage Users", href: "/admin/users", icon: "👤", color: "bg-purple-600" },
-    { label: "View Reports", href: "/admin/reports", icon: "📈", color: "bg-yellow-600" },
-  ];
-
-  const recentActivity = [
-    { action: "New course created", course: "Advanced React Patterns", time: "2 hours ago", icon: "📚" },
-    { action: "Lesson published", course: "JavaScript Basics - Lesson 5", time: "4 hours ago", icon: "✅" },
-    { action: "New student enrolled", course: "Python for Beginners", time: "6 hours ago", icon: "👤" },
-    { action: "Course updated", course: "Data Structures", time: "1 day ago", icon: "✏️" },
+    { label: "Manage Lessons", href: "/admin/lessons", icon: "✍️", color: "bg-green-600" },
+    { label: "Manage Courses", href: "/admin/courses", icon: "👤", color: "bg-purple-600" },
+    { label: "View All Users", href: "/admin/users", icon: "📈", color: "bg-yellow-600" },
   ];
 
   return (
-    <RoleGuard 
-      allowedRoles={[Role.ADMIN]} 
+    <RoleGuard
+      allowedRoles={[Role.ADMIN]}
       fallback={
         <div className="min-h-screen flex items-center justify-center p-8">
           <Card className="max-w-md">
@@ -41,8 +87,8 @@ export default function AdminDashboard() {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 You need Admin privileges to access this area.
               </p>
-              <Link href="/dashboard">
-                <Button>Go to Dashboard</Button>
+              <Link href="/admin">
+                <Button>Stay on Admin Dashboard</Button>
               </Link>
             </CardContent>
           </Card>
@@ -63,23 +109,42 @@ export default function AdminDashboard() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {adminStats.map((stat) => (
-              <Link key={stat.label} href={stat.link}>
-                <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                          {stat.value}
-                        </p>
+            {loading ? (
+              // Loading state
+              <>
+                {[1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-3"></div>
+                          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                        </div>
+                        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
                       </div>
-                      <div className="text-4xl opacity-50">{stat.icon}</div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </>
+            ) : (
+              adminStats.map((stat) => (
+                <Link key={stat.label} href={stat.link}>
+                  <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
+                          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                            {stat.value}
+                          </p>
+                        </div>
+                        <div className="text-4xl opacity-50">{stat.icon}</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -103,37 +168,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle>📋 Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                    >
-                      <span className="text-2xl">{activity.icon}</span>
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900 dark:text-white text-sm">
-                          {activity.action}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {activity.course}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                          {activity.time}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
+          <div className="grid grid-cols-1 gap-8">
             {/* Management Links */}
             <Card>
               <CardHeader>

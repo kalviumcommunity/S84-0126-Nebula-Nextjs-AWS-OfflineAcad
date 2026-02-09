@@ -10,6 +10,7 @@ interface LessonFormData {
     title: string;
     description: string;
     duration: number;
+    isPublished: boolean;
 }
 
 export default function CreateLessonPage() {
@@ -17,6 +18,7 @@ export default function CreateLessonPage() {
     const params = useParams();
     const courseId = params.courseId as string;
     const [contentUrl, setContentUrl] = useState<string | null>(null);
+    const [isPublished, setIsPublished] = useState(false);
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LessonFormData>();
 
     const onSubmit = async (data: LessonFormData) => {
@@ -28,6 +30,7 @@ export default function CreateLessonPage() {
                     ...data,
                     courseId,
                     contentUrl,
+                    isPublished,
                 }),
             });
 
@@ -83,6 +86,26 @@ export default function CreateLessonPage() {
                         onUploadComplete={(url) => setContentUrl(url)}
                         currentUrl={contentUrl}
                     />
+                </div>
+
+                {/* Publish Toggle */}
+                <div className="border-t pt-6">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={isPublished}
+                            onChange={(e) => setIsPublished(e.target.checked)}
+                            className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 dark:bg-gray-800 dark:border-gray-700"
+                        />
+                        <div>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                Publish Lesson
+                            </span>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Make this lesson visible to students immediately
+                            </p>
+                        </div>
+                    </label>
                 </div>
 
                 {/* Actions */}

@@ -4,6 +4,10 @@
 
 OfflineAcademy is a progressive web application designed for educational institutions in rural and low-connectivity regions. The platform enables continuous learning through offline-first architecture, local data caching, and efficient synchronization protocols.
 
+For detailed documentation, please refer to:
+- [Database Configuration and Management](docs/database-setup.md)
+- [Progress Tracking Architecture](docs/architecture/progress-tracking.md)
+
 ### Problem Statement
 
 Traditional digital learning platforms require:

@@ -32,23 +32,46 @@ export default function CourseEditorPage() {
     const router = useRouter();
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
+    const [updatingLessonId, setUpdatingLessonId] = useState<string | null>(null);
+
+    const fetchCourse = async () => {
+        try {
+            const res = await fetch(`/api/courses/${courseId}`);
+            if (!res.ok) throw new Error("Failed to fetch course details");
+            const data = await res.json();
+            setCourse(data);
+        } catch (error: any) {
+            toast.error(error.message);
+            router.push("/admin/courses");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const togglePublishLesson = async (lessonId: string, currentStatus: boolean) => {
+        try {
+            setUpdatingLessonId(lessonId);
+            const res = await fetch(`/api/lessons/${lessonId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ isPublished: !currentStatus }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update lesson");
+
+            toast.success(`Lesson ${!currentStatus ? 'published' : 'unpublished'} successfully`);
+            
+            // Refresh course data
+            await fetchCourse();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setUpdatingLessonId(null);
+        }
+    };
 
     useEffect(() => {
-        const fetchCourse = async () => {
-            try {
-                const res = await fetch(`/api/courses/${courseId}`);
-                if (!res.ok) throw new Error("Failed to fetch course details");
-                const data = await res.json();
-                setCourse(data);
-            } catch (error: any) {
-                toast.error(error.message);
-                router.push("/admin/courses");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (courseId) {
+        fetchCourse();        if (courseId) {
             fetchCourse();
         }
     }, [courseId, router]);
@@ -135,9 +158,15 @@ export default function CourseEditorPage() {
                                             <Badge variant={lesson.isPublished ? "success" : "warning"}>
                                                 {lesson.isPublished ? "Published" : "Draft"}
                                             </Badge>
-                                            {/* Future: Add Edit Lesson functionality */}
-                                            <Button variant="outline" size="sm" disabled>
-                                                Edit
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => togglePublishLesson(lesson.id, lesson.isPublished)}
+                                                disabled={updatingLessonId === lesson.id}
+                                            >
+                                                {updatingLessonId === lesson.id 
+                                                    ? "Updating..." 
+                                                    : lesson.isPublished ? "Unpublish" : "Publish"}
                                             </Button>
                                         </div>
                                     </CardContent>

@@ -4,13 +4,14 @@ const CSP = [
   "default-src 'self'",
   "script-src 'self' https://apis.google.com 'unsafe-eval' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "img-src 'self' data:",
+  "img-src 'self' data: https://czgonpfmuzibutsthkhv.supabase.co",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://api.github.com",
+  "connect-src 'self' https://api.github.com https://czgonpfmuzibutsthkhv.supabase.co",
 ].join('; ');
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  
   async headers() {
     return [
       {

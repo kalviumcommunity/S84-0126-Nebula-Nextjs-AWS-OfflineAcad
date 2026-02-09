@@ -15,20 +15,24 @@ export async function getCurrentUserRole(): Promise<Role | null> {
     return payload?.role as Role || null;
 }
 
-export async function verifyAuth(request: NextRequest): Promise<{ id: string; email: string; role: Role } | null> {
+export async function verifyAuth(request: NextRequest): Promise<{ userId: string; email: string; role: Role } | null> {
     const cookieStore = await cookies();
     const token = cookieStore.get("refreshToken")?.value;
 
     if (!token) return null;
 
-    const payload = await verifyToken(token);
-    if (!payload) return null;
+    try {
+        const payload = await verifyToken(token);
+        if (!payload) return null;
 
-    return {
-        id: payload.userId as string,
-        email: payload.email as string,
-        role: payload.role as Role,
-    };
+        return {
+            userId: payload.userId as string,
+            email: payload.email as string,
+            role: payload.role as Role,
+        };
+    } catch (error) {
+        return null; // Invalid token
+    }
 }
 
 export function unauthorized() {

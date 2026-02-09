@@ -36,16 +36,12 @@ export default function Sidebar() {
       icon: <TrendingUp className="w-5 h-5" />
     },
     {
-      href: "/downloads",
-      label: "Downloads",
-      icon: <Download className="w-5 h-5" />
-    },
-    {
       href: "/settings",
       label: "Settings",
       icon: <Settings className="w-5 h-5" />
     },
   ];
+
 
   return (
     <aside className="w-64 h-screen sticky top-0 bg-[var(--card-bg)] text-[var(--foreground)] overflow-y-auto border-r border-[var(--card-border)] shadow-lg transition-colors duration-300 flex flex-col z-20">
@@ -56,9 +52,9 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${isActive
-                ? "bg-[var(--primary)] text-white shadow-md font-medium"
-                : "text-[var(--secondary)] hover:bg-[var(--nav-bg)] hover:text-[var(--primary)] hover:translate-x-1"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white"
+                  : "text-gray-300 hover:bg-gray-800"
                 }`}
             >
               <span className={`transition-transform duration-200 ${isActive ? "" : "group-hover:scale-110"}`}>

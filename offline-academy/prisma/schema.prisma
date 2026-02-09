@@ -89,9 +89,13 @@ model Lesson {
 }
 
 model UserProgress {
-  id          String   @id @default(uuid())
-  completed   Boolean  @default(false)
-  lastWatched DateTime @updatedAt
+  id               String   @id @default(uuid())
+  completed        Boolean  @default(false)
+  progressPercent  Int      @default(0)
+  timeSpent        Int      @default(0) // in seconds
+  startedAt        DateTime @default(now())
+  lastWatched      DateTime @updatedAt
+  completedAt      DateTime?
 
   userId      String
   user        User     @relation(fields: [userId], references: [id])

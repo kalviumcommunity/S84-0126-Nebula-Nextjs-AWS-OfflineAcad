@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useUI } from "@/hooks/useUI";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import LogoutModal from "@/components/LogoutModal";
@@ -12,6 +12,11 @@ export default function Header() {
   const { theme, toggleTheme } = useUI();
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogoutClick = () => {
     setShowLogoutModal(true);
@@ -49,11 +54,17 @@ export default function Header() {
             </Link>
             {isAuthenticated && (
               <>
-                <Link href="/dashboard" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group">
+                <Link 
+                  href={user?.role === "ADMIN" ? "/admin" : "/dashboard"} 
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group"
+                >
                   Dashboard
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-purple-700 group-hover:w-full transition-all duration-300"></span>
                 </Link>
-                <Link href="/courses" className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group">
+                <Link 
+                  href={user?.role === "ADMIN" ? "/admin/courses" : "/courses"} 
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 relative group"
+                >
                   Courses
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-purple-700 group-hover:w-full transition-all duration-300"></span>
                 </Link>
@@ -68,9 +79,11 @@ export default function Header() {
               onClick={toggleTheme}
               className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 group animate-bounce-gentle"
               title="Toggle theme (Lamp)"
+              suppressHydrationWarning
             >
               <div className="text-lg group-hover:rotate-12 transition-transform duration-300">
-                {theme === "light" ? "💡" : "🔦"}
+                {mounted && (theme === "light" ? "💡" : "🔦")}
+                {!mounted && "💡"} {/* Default to light icon on server to prevent empty flash, or just match server default */}
               </div>
             </button>
 

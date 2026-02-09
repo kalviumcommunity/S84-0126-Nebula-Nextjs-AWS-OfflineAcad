@@ -9,6 +9,15 @@ export async function GET(request: NextRequest) {
     const courseId = searchParams.get("courseId");
     const published = searchParams.get("published");
 
+    // Try to get the authenticated user (optional for public lesson viewing)
+    let userId: string | null = null;
+    try {
+      const payload = await verifyAuth(request);
+      userId = payload?.userId || null;
+    } catch {
+      // Continue without userId for public access
+    }
+
     const lessons = await prisma.lesson.findMany({
       where: {
         ...(courseId && { courseId }),
@@ -22,6 +31,11 @@ export async function GET(request: NextRequest) {
             subject: true,
           },
         },
+        progress: userId ? {
+          where: {
+            userId: userId
+          }
+        } : false,
         _count: {
           select: {
             progress: true,
@@ -34,7 +48,14 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    return NextResponse.json(lessons);
+    // Transform lessons to include completion status
+    const lessonsWithProgress = lessons.map(lesson => ({
+      ...lesson,
+      userProgress: lesson.progress && lesson.progress.length > 0 ? lesson.progress[0] : null,
+      isCompleted: lesson.progress && lesson.progress.length > 0 ? lesson.progress[0].completed : false
+    }));
+
+    return NextResponse.json(lessonsWithProgress);
   } catch (error: any) {
     return NextResponse.json(
       { error: "Failed to fetch lessons", details: error.message },

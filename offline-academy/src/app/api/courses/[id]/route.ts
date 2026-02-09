@@ -5,11 +5,12 @@ import { verifyAuth } from "@/lib/auth-server";
 // GET single course by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const course = await prisma.course.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         lessons: {
           orderBy: { order: "asc" },
@@ -41,11 +42,11 @@ export async function GET(
 // PUT - Update course (Admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
-    
+
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -53,19 +54,22 @@ export async function PUT(
       );
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { title, description, subject, level, image, isPublished } = body;
 
+    // Build update data object with only provided fields
+    const updateData: any = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (subject !== undefined) updateData.subject = subject;
+    if (level !== undefined) updateData.level = level;
+    if (image !== undefined) updateData.image = image;
+    if (isPublished !== undefined) updateData.isPublished = isPublished;
+
     const course = await prisma.course.update({
-      where: { id: params.id },
-      data: {
-        title,
-        description,
-        subject,
-        level,
-        image,
-        isPublished,
-      },
+      where: { id },
+      data: updateData,
     });
 
     return NextResponse.json(course);
@@ -80,11 +84,11 @@ export async function PUT(
 // DELETE course (Admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await verifyAuth(request);
-    
+
     if (!user || user.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Unauthorized. Admin access required." },
@@ -92,8 +96,9 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
     await prisma.course.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: "Course deleted successfully" });

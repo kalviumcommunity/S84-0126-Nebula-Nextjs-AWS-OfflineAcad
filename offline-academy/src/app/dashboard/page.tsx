@@ -5,57 +5,69 @@ import Sidebar from "@/components/layout/Sidebar";
 import FileUpload from "@/components/FileUpload";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ProgressBar } from "@/components/ui";
 import Link from "next/link";
-import { useEffect } from "react";
-import {
-  BookOpen,
-  CheckCircle2,
-  Clock,
-  Trophy,
-  Zap,
-  Globe,
-  PenTool,
-  Atom,
-  Calculator,
-  Code,
-  Flame,
-  Settings,
-  TrendingUp,
-  Search,
-  Upload
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+
+interface DashboardStats {
+  coursesEnrolled: number;
+  completedLessons: number;
+  recentLessons: Array<{
+    id: string;
+    title: string;
+    subject: string;
+    progress: number;
+    status: string;
+    courseId: string;
+  }>;
+}
 
 export default function DashboardPage() {
   const { isAuthenticated, user } = useAuth();
   const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
+    } else {
+      fetchDashboardStats();
     }
   }, [isAuthenticated, router]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch("/api/dashboard/stats");
+      if (!response.ok) throw new Error("Failed to fetch dashboard data");
+      const data = await response.json();
+      setStats(data);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load dashboard data");
+      console.error("Error fetching dashboard stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isAuthenticated) {
     return null;
   }
 
-  const recentLessons = [
-    { id: 1, title: "React Fundamentals", subject: "Computer Science", progress: 100, status: "completed", icon: <Code className="w-6 h-6" /> },
-    { id: 2, title: "Advanced Algebra", subject: "Mathematics", progress: 65, status: "in-progress", icon: <Calculator className="w-6 h-6" /> },
-    { id: 3, title: "Cellular Biology", subject: "Science", progress: 80, status: "in-progress", icon: <Atom className="w-6 h-6" /> },
-    { id: 4, title: "Essay Writing", subject: "English", progress: 45, status: "in-progress", icon: <PenTool className="w-6 h-6" /> },
-  ];
+
+  const subjectIcons: Record<string, string> = {
+    "Computer Science": "⚛️",
+    "Mathematics": "📐",
+    "Science": "🔬",
+    "English": "✍️",
+    "Physics": "⚡",
+    "Geography": "🌍",
+    "History": "📜",
+    "default": "📚"
+  };
 
   const quickStats = [
-    { label: "Courses Enrolled", value: "6", icon: <BookOpen className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />, color: "indigo" },
-    { label: "Completed Lessons", value: "42", icon: <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />, color: "green" },
-    { label: "Learning Hours", value: "38.5", icon: <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />, color: "purple" },
-    { label: "Achievements", value: "12", icon: <Trophy className="w-6 h-6 text-amber-600 dark:text-amber-400" />, color: "yellow" },
-  ];
-
-  const upcomingLessons = [
-    { id: 1, title: "Introduction to Physics", time: "Today, 3:00 PM", icon: <Zap className="w-5 h-5 text-yellow-500" /> },
-    { id: 2, title: "World Geography", time: "Tomorrow, 10:00 AM", icon: <Globe className="w-5 h-5 text-blue-500" /> },
-    { id: 3, title: "Spanish Basics", time: "Wed, 2:00 PM", icon: <MessageCircle className="w-5 h-5 text-red-500" /> },
+    { label: "Courses Enrolled", value: stats?.coursesEnrolled?.toString() || "0", icon: "📚", color: "indigo" },
+    { label: "Completed Lessons", value: stats?.completedLessons?.toString() || "0", icon: "✅", color: "green" },
   ];
 
   // Helper for missed icon
@@ -110,24 +122,40 @@ export default function DashboardPage() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {quickStats.map((stat) => (
-                <Card key={stat.label} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-[var(--card-border)] group">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-[var(--secondary)] mb-1">{stat.label}</p>
-                        <p className={`text-3xl font-bold text-[var(--foreground)]`}>
-                          {stat.value}
-                        </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {loading ? (
+                <>
+                  {[1, 2].map((i) => (
+                    <Card key={i} className="animate-pulse">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-3"></div>
+                            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                          </div>
+                          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </>
+              ) : (
+                quickStats.map((stat) => (
+                  <Card key={stat.label} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
+                          <p className={`text-3xl font-bold text-${stat.color}-600 dark:text-${stat.color}-400`}>
+                            {stat.value}
+                          </p>
+                        </div>
+                        <div className="text-4xl opacity-50">{stat.icon}</div>
                       </div>
-                      <div className="p-3 rounded-xl bg-[var(--nav-bg)] group-hover:bg-[var(--primary-hover)] transition-colors">
-                        {stat.icon}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -137,58 +165,80 @@ export default function DashboardPage() {
                 <Card className="border-[var(--card-border)]">
                   <CardHeader className="border-b border-[var(--card-border)] pb-4">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <BookOpen className="w-5 h-5 text-[var(--primary)]" />
-                        Continue Learning
-                      </CardTitle>
-                      <Link href="/lessons">
-                        <Button variant="outline" size="sm" className="gap-2">
-                          View All
-                        </Button>
+                      <CardTitle>Continue Learning</CardTitle>
+                      <Link href="/courses">
+                        <Button variant="outline" size="sm">View All Courses</Button>
                       </Link>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      {recentLessons.map((lesson) => (
-                        <div
-                          key={lesson.id}
-                          className="p-4 rounded-xl border border-[var(--card-border)] hover:border-[var(--primary)] transition-all duration-300 bg-[var(--card-bg)] hover:shadow-md group"
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className="p-3 rounded-lg bg-[var(--background)] text-[var(--primary)] group-hover:text-white group-hover:bg-[var(--primary)] transition-all duration-300">
-                              {lesson.icon}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div>
-                                  <h3 className="font-semibold text-[var(--foreground)] truncate">
-                                    {lesson.title}
-                                  </h3>
-                                  <p className="text-sm text-[var(--secondary)]">
-                                    {lesson.subject}
-                                  </p>
-                                </div>
-                                <Badge variant={lesson.status === "completed" ? "success" : "warning"}>
-                                  {lesson.status === "completed" ? "Completed" : "In Progress"}
-                                </Badge>
+                  <CardContent>
+                    {loading ? (
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="p-4 rounded-lg border dark:border-gray-700 animate-pulse">
+                            <div className="flex items-start gap-4">
+                              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                              <div className="flex-1">
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
                               </div>
-                              <div className="space-y-2">
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : stats?.recentLessons && stats.recentLessons.length > 0 ? (
+                      <div className="space-y-4">
+                        {stats.recentLessons.map((lesson) => (
+                          <div
+                            key={lesson.id}
+                            className="p-4 rounded-lg border dark:border-gray-700 hover:shadow-md transition-all duration-300 bg-white dark:bg-gray-800"
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="text-3xl">{subjectIcons[lesson.subject] || subjectIcons.default}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div>
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                                      {lesson.title}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      {lesson.subject}
+                                    </p>
+                                  </div>
+                                  <Badge variant={lesson.status === "completed" ? "success" : "warning"}>
+                                    {lesson.status === "completed" ? "Completed" : "In Progress"}
+                                  </Badge>
+                                </div>
                                 <ProgressBar value={lesson.progress} />
-                                <div className="flex items-center justify-between">
-                                  <span className="text-xs font-medium text-[var(--secondary)]">
+                                <div className="flex items-center justify-between mt-3">
+                                  <span className="text-xs text-gray-600 dark:text-gray-400">
                                     {lesson.progress}% complete
                                   </span>
-                                  <Button size="sm" className="h-8">
-                                    {lesson.status === "completed" ? "Review" : "Continue"}
-                                  </Button>
+                                  <Link href={`/courses/${lesson.courseId}`}>
+                                    <Button size="sm">
+                                      {lesson.status === "completed" ? "Review" : "Continue"}
+                                    </Button>
+                                  </Link>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="text-6xl mb-4">📚</div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                          No Lessons Yet
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">
+                          Enroll in a course to start learning!
+                        </p>
+                        <Link href="/courses">
+                          <Button>Browse Courses</Button>
+                        </Link>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -208,64 +258,6 @@ export default function DashboardPage() {
 
               {/* Right Sidebar - Takes 1 column */}
               <div className="space-y-6">
-                {/* Upcoming Lessons */}
-                <Card className="border-[var(--card-border)]">
-                  <CardHeader className="border-b border-[var(--card-border)] pb-4">
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-[var(--primary)]" />
-                      Upcoming Lessons
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      {upcomingLessons.map((lesson) => (
-                        <div
-                          key={lesson.id}
-                          className="p-3 rounded-lg bg-[var(--nav-bg)] border border-[var(--card-border)] hover:border-[var(--primary)] transition-colors group"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-md bg-[var(--background)] shadow-sm">
-                              {lesson.icon}
-                            </div>
-                            <div>
-                              <p className="font-medium text-[var(--foreground)] text-sm group-hover:text-[var(--primary)] transition-colors">
-                                {lesson.title}
-                              </p>
-                              <p className="text-xs text-[var(--secondary)] mt-1 font-medium">
-                                {lesson.time}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Learning Streak */}
-                <Card className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 border-orange-100 dark:border-orange-900/30 overflow-hidden relative">
-                  <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                    <Flame className="w-24 h-24 text-orange-500" />
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-orange-900 dark:text-orange-200 flex items-center gap-2">
-                      <Flame className="w-5 h-5 text-orange-500 fill-orange-500 animate-pulse" />
-                      Learning Streak
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="relative z-10">
-                    <div className="text-center py-2">
-                      <p className="text-5xl font-extrabold text-orange-500 dark:text-orange-400 mb-2 drop-shadow-sm">7</p>
-                      <p className="text-sm text-orange-800 dark:text-orange-200 font-medium uppercase tracking-wide opacity-80">
-                        Days in a row
-                      </p>
-                      <p className="text-xs text-orange-700 dark:text-orange-300 mt-4 font-medium bg-orange-100 dark:bg-orange-900/40 py-1 px-3 rounded-full inline-block">
-                        Keep going! You're doing great! 🎉
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Quick Actions */}
                 <Card className="border-[var(--card-border)]">
                   <CardHeader className="border-b border-[var(--card-border)] pb-4">
@@ -285,6 +277,11 @@ export default function DashboardPage() {
                         <TrendingUp className="w-4 h-4" /> View Progress
                       </Button>
                     </Link>
+                    <Link href="/lessons">
+                      <Button className="w-full justify-start" variant="outline">
+                        ✏️ My Lessons
+                      </Button>
+                    </Link>
                     <Link href="/settings">
                       <Button className="w-full justify-start gap-2" variant="outline">
                         <Settings className="w-4 h-4" /> Settings
@@ -300,3 +297,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

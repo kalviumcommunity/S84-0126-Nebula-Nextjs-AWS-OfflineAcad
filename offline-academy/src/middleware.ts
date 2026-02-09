@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 import { logger } from "@/lib/logger";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-fallback';
 
 /**
  * Generate a unique correlation ID for request tracing
@@ -20,26 +20,36 @@ export function middleware(req: NextRequest) {
 
   // Generate or extract correlation ID for request tracing
   const requestId = req.headers.get('x-request-id') || generateRequestId();
-  const requestLogger = logger;
-  requestLogger.setRequestId(requestId);
 
-  // Log incoming request
-  requestLogger.info('Incoming request', {
-    requestId,
-    method: req.method,
-    path: pathname,
-    userAgent: req.headers.get('user-agent')?.substring(0, 50),
-  });
+  try {
+    const requestLogger = logger;
+    requestLogger.setRequestId(requestId);
+
+    // Log incoming request
+    requestLogger.info('Incoming request', {
+      requestId,
+      method: req.method,
+      path: pathname,
+      userAgent: req.headers.get('user-agent')?.substring(0, 50),
+    });
+  } catch (error) {
+    // Fallback to console if logger fails
+    console.log(`[INFO] Incoming request: ${req.method} ${pathname}`);
+  }
 
   // Enforce HTTPS in production (redirect non-HTTPS requests)
   if (process.env.NODE_ENV === 'production') {
     const proto = req.headers.get('x-forwarded-proto') || '';
     if (proto !== 'https') {
-      requestLogger.warn('HTTPS redirect required', {
-        requestId,
-        path: pathname,
-        currentProto: proto,
-      });
+      try {
+        logger.warn('HTTPS redirect required', {
+          requestId,
+          path: pathname,
+          currentProto: proto,
+        });
+      } catch (error) {
+        console.warn(`[WARN] HTTPS redirect required for ${pathname}`);
+      }
 
       const url = new URL(req.nextUrl.toString());
       url.protocol = 'https:';
@@ -71,10 +81,14 @@ export function middleware(req: NextRequest) {
     const token = authHeader?.split(" ")[1];
 
     if (!token) {
-      requestLogger.warn('Admin access denied - token missing', {
-        requestId,
-        path: pathname,
-      });
+      try {
+        logger.warn('Admin access denied - token missing', {
+          requestId,
+          path: pathname,
+        });
+      } catch (error) {
+        console.warn(`[WARN] Admin access denied - token missing: ${pathname}`);
+      }
 
       return NextResponse.json(
         { success: false, message: "Token missing", requestId },
@@ -90,12 +104,16 @@ export function middleware(req: NextRequest) {
       };
 
       if (decoded.role !== "ADMIN") {
-        requestLogger.warn('Admin access denied - insufficient privileges', {
-          requestId,
-          userId: decoded.id,
-          userRole: decoded.role,
-          path: pathname,
-        });
+        try {
+          logger.warn('Admin access denied - insufficient privileges', {
+            requestId,
+            userId: decoded.id,
+            userRole: decoded.role,
+            path: pathname,
+          });
+        } catch (error) {
+          console.warn(`[WARN] Admin access denied - insufficient privileges: ${pathname}`);
+        }
 
         return NextResponse.json(
           { success: false, message: "Access denied", requestId },
@@ -103,11 +121,15 @@ export function middleware(req: NextRequest) {
         );
       }
 
-      requestLogger.debug('Admin access granted', {
-        requestId,
-        userId: decoded.id,
-        path: pathname,
-      });
+      try {
+        logger.debug('Admin access granted', {
+          requestId,
+          userId: decoded.id,
+          path: pathname,
+        });
+      } catch (error) {
+        console.log(`[DEBUG] Admin access granted: ${pathname}`);
+      }
 
       // Attach user info
       const requestHeaders = new Headers(req.headers);
@@ -120,11 +142,15 @@ export function middleware(req: NextRequest) {
         request: { headers: requestHeaders },
       });
     } catch (error) {
-      requestLogger.warn('Admin access denied - invalid token', {
-        requestId,
-        path: pathname,
-        error: error instanceof Error ? error.message : String(error),
-      });
+      try {
+        logger.warn('Admin access denied - invalid token', {
+          requestId,
+          path: pathname,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      } catch (logError) {
+        console.warn(`[WARN] Admin access denied - invalid token: ${pathname}`);
+      }
 
       return NextResponse.json(
         { success: false, message: "Invalid or expired token", requestId },

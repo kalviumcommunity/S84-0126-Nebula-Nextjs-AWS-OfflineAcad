@@ -5,6 +5,8 @@ import { handleError } from "@/lib/errorHandler";
 import { sanitizeEmail, sanitizeText } from "@/lib/sanitizer";
 import { getCorsHeaders, getSecurityHeaders, mergeHeaders } from '@/lib/security';
 import { createRequestLogger } from "@/lib/logger";
+import { createAccessToken, createRefreshToken } from "@/lib/jwt";
+import { cookies } from "next/headers";
 
 /**
  * OWASP Security: Signup API Route
@@ -104,6 +106,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Auto-login: Generate tokens and set cookie
+    const accessToken = await createAccessToken({ userId: user.id, role: user.role });
+    const refreshToken = await createRefreshToken({ userId: user.id, role: user.role });
+
+    const cookieStore = await cookies();
+    cookieStore.set("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60,
+      path: "/",
+    });
+
     const duration = Date.now() - startTime;
     requestLogger.info('User signup successful', {
       userId: user.id,
@@ -118,13 +133,14 @@ export async function POST(req: NextRequest) {
         success: true,
         message: "Signup successful",
         user,
+        accessToken, // Return access token for client usage
         requestId,
       },
       { status: 201, headers }
     );
   } catch (error) {
     const duration = Date.now() - startTime;
-    
+
     // Log the error before handling
     const logger = createRequestLogger(requestId);
     logger.error('Signup error', {

@@ -84,32 +84,48 @@ class StructuredLogger {
    * Log at DEBUG level
    */
   debug(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog('debug', message, meta);
-    console.log(JSON.stringify(logEntry));
+    try {
+      const logEntry = this.formatLog('debug', message, meta);
+      console.log(JSON.stringify(logEntry));
+    } catch (error) {
+      console.log(`[DEBUG] ${message}`, meta);
+    }
   }
 
   /**
    * Log at INFO level
    */
   info(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog('info', message, meta);
-    console.log(JSON.stringify(logEntry));
+    try {
+      const logEntry = this.formatLog('info', message, meta);
+      console.log(JSON.stringify(logEntry));
+    } catch (error) {
+      console.log(`[INFO] ${message}`, meta);
+    }
   }
 
   /**
    * Log at WARN level
    */
   warn(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog('warn', message, meta);
-    console.warn(JSON.stringify(logEntry));
+    try {
+      const logEntry = this.formatLog('warn', message, meta);
+      console.warn(JSON.stringify(logEntry));
+    } catch (error) {
+      console.warn(`[WARN] ${message}`, meta);
+    }
   }
 
   /**
    * Log at ERROR level
    */
   error(message: string, meta?: Record<string, any>): void {
-    const logEntry = this.formatLog('error', message, meta);
-    console.error(JSON.stringify(logEntry));
+    try {
+      const logEntry = this.formatLog('error', message, meta);
+      console.error(JSON.stringify(logEntry));
+    } catch (error) {
+      console.error(`[ERROR] ${message}`, meta);
+    }
   }
 
   /**

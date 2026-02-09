@@ -30,7 +30,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full glass border-b border-gray-200 dark:border-gray-800">
+    <header className="sticky top-0 z-50 w-full glass border-b border-[var(--card-border)]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo & Brand */}
@@ -38,7 +38,7 @@ export default function Header() {
             <div className="flex items-center justify-center w-9 h-9 bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-lg font-bold text-sm shadow-md group-hover:scale-110 transition-transform duration-300">
               O
             </div>
-            <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">OfflineAcad</span>
+            <span className="text-xl font-bold tracking-tight text-[var(--foreground)]">OfflineAcad</span>
           </Link>
 
           {/* Navigation */}

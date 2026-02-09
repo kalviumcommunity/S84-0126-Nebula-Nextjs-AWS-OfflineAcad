@@ -67,7 +67,7 @@ export default function CoursesPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="flex h-screen bg-[var(--background)] transition-colors duration-300">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -80,7 +80,7 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen bg-[var(--background)] transition-colors duration-300">
       <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -88,8 +88,8 @@ export default function CoursesPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">All Courses</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">All Courses</h1>
+              <p className="text-[var(--secondary)]">
                 Explore our comprehensive curriculum designed for offline learning
               </p>
             </div>
@@ -134,7 +134,7 @@ export default function CoursesPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <CardTitle className="text-lg">{course.title}</CardTitle>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-[var(--secondary)] mt-1">
                             {course.subject}
                           </p>
                         </div>

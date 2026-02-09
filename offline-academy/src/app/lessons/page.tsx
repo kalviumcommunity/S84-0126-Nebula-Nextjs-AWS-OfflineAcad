@@ -95,7 +95,7 @@ export default function LessonsPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen bg-[var(--background)] transition-colors duration-300">
       <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -103,8 +103,8 @@ export default function LessonsPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Lessons</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">My Lessons</h1>
+              <p className="text-[var(--secondary)]">
                 Continue your learning journey with our comprehensive lessons
               </p>
             </div>
@@ -115,8 +115,8 @@ export default function LessonsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                      <tr className="border-b border-[var(--card-border)] bg-[var(--nav-bg)]">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-[var(--foreground)]">
                           Lesson
                         </th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
@@ -125,7 +125,7 @@ export default function LessonsPage() {
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
                           Duration
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-[var(--foreground)]">
                           Status
                         </th>
                         <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white">
@@ -145,10 +145,10 @@ export default function LessonsPage() {
                               <div className="flex items-center gap-3">
                                 <span className="text-2xl">{lesson.icon}</span>
                                 <div>
-                                  <p className="font-medium text-gray-900 dark:text-white">
+                                  <p className="font-medium text-[var(--foreground)]">
                                     {lesson.title}
                                   </p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  <p className="text-sm text-[var(--secondary)]">
                                     {lesson.difficulty}
                                   </p>
                                 </div>

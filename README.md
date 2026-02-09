@@ -279,6 +279,100 @@ Graceful degradation for server failures:
 
 ---
 
+## Centralized Error Handling
+
+### Overview
+
+OfflineAcademy uses a centralized error handling strategy to ensure consistency, security, and observability across the application. By funneling all API errors through a single handler, we maintain a uniform response format and prevent sensitive internal data from leaking to production users.
+
+**Key Benefits:**
+- **Consistency:** Every error follows a uniform response format.
+- **Security:** Sensitive stack traces are hidden in production.
+- **Observability:** Structured JSON logs make debugging and monitoring easier in CloudWatch or Azure Monitor.
+
+### Implementation Details
+
+#### 1. Structured Logger (`src/lib/logger.ts`)
+The logger provides JSON-formatted outputs that are easily searchable in cloud environments.
+
+```typescript
+export const logger = {
+  info: (message: string, meta?: any) => {
+    console.log(JSON.stringify({ level: "info", message, meta, timestamp: new Date() }));
+  },
+  error: (message: string, meta?: any) => {
+    console.error(JSON.stringify({ level: "error", message, meta, timestamp: new Date() }));
+  },
+};
+```
+
+#### 2. Centralized Error Handler (`src/lib/errorHandler.ts`)
+The `handleError` function classifies and formats errors based on the environment.
+
+```typescript
+export function handleError(error: any, context: string) {
+  const isProd = process.env.NODE_ENV === "production";
+
+  const errorResponse = {
+    success: false,
+    message: isProd
+      ? "Something went wrong. Please try again later."
+      : error.message || "Unknown error",
+    ...(isProd ? {} : { stack: error.stack }),
+  };
+
+  logger.error(`Error in ${context}`, {
+    message: error.message,
+    stack: isProd ? "REDACTED" : error.stack,
+  });
+
+  return NextResponse.json(errorResponse, { status: 500 });
+}
+```
+
+#### 3. API Integration Example
+Using the handler in routes ensures that even unexpected crashes are caught gracefully.
+
+```typescript
+export async function GET() {
+  try {
+    throw new Error("Database connection failed!");
+  } catch (error) {
+    return handleError(error, "GET /api/users");
+  }
+}
+```
+
+### Development vs Production Behavior
+
+| Feature | Development Mode | Production Mode |
+|---------|------------------|-----------------|
+| **Message** | Full error message (e.g., "DB Timeout") | Generic safe message ("Something went wrong") |
+| **Stack Trace** | Sent in JSON response | Completely hidden/removed |
+| **Logging** | Full details in console | Detailed internal logs, redacted stack traces |
+
+### Evidence & Reflection
+
+#### Logs (Console Output)
+```json
+{
+  "level": "error",
+  "message": "Error in GET /api/error-test",
+  "meta": {
+    "message": "Database connection failed!",
+    "stack": "REDACTED"
+  },
+  "timestamp": "2025-10-29T16:45:00Z"
+}
+```
+
+#### Reflection
+- **Debugging Efficiency:** Structured logs allow developers to filter errors by context or severity in production logs without needing to replicate the environment.
+- **User Trust:** By redacting sensitive data (like database paths or internal logic) in production, we protect the system against information disclosure attacks and provide a professional, polished experience even when things go wrong.
+- **Extensibility:** The handler can be easily extended to handle specific error types (e.g., `ValidationError`, `AuthError`) by checking the error's instance or status code.
+
+---
+
 ## Development Workflow
 
 ### Quality Assurance Pipeline
@@ -287,6 +381,60 @@ Graceful degradation for server failures:
 ```bash
 npx lint-staged  # Runs ESLint + Prettier on staged files
 ```
+
+---
+
+## Testing (Jest + React Testing Library)
+
+This project uses **Jest** and **React Testing Library (RTL)** for unit + integration tests, including **integration testing for Next.js API route handlers**.
+
+### Install
+
+From `offline-academy/`:
+
+```bash
+npm install
+```
+
+### Run tests
+
+```bash
+npm test
+```
+
+### Run tests with coverage (required)
+
+```bash
+npm run test:coverage
+```
+
+### Coverage thresholds (quality gate)
+
+Coverage is enforced at **80% minimum** (branches/functions/lines/statements) via `offline-academy/jest.config.js`. CI will fail if coverage drops below the threshold.
+
+### What we test
+
+- **Unit tests**: small logic utilities + isolated UI components
+- **Integration tests (API routes)**: call Next.js route handlers directly and validate behavior while mocking external dependencies (DB/auth)
+
+Examples added in `offline-academy/__tests__/`:
+- `Button.test.tsx` (RTL component test)
+- `format.test.ts` (logic test)
+- `api-enroll.test.ts`, `api-me.test.ts`, `api-progress.test.ts` (API route integration tests)
+
+### CI Integration
+
+GitHub Actions runs coverage in `offline-academy/.github/workflows/ci.yml`:
+
+- `npm run test:coverage`
+
+This keeps deployments safe by preventing regressions.
+
+### Reflection
+
+- **Why unit tests matter**: they catch bugs early, speed up iteration, and prevent regressions during feature changes.
+- **Current gaps**: we’re strong on unit + API integration tests; adding **E2E** (Playwright/Cypress) would validate full user journeys (signup → enroll → complete lesson) in the browser.
+- **Reliability impact**: coverage thresholds + CI checks enforce a consistent quality bar, making releases safer and easier to maintain.
 
 **Configuration:**
 - TypeScript Strict Mode enabled

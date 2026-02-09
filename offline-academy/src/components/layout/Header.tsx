@@ -75,17 +75,17 @@ export default function Header() {
           {/* Right Actions */}
           <div className="flex items-center gap-4">
             {/* Theme Toggle - Lamp Icon */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 group animate-bounce-gentle"
-              title="Toggle theme (Lamp)"
-              suppressHydrationWarning
-            >
-              <div className="text-lg group-hover:rotate-12 transition-transform duration-300">
-                {mounted && (theme === "light" ? "💡" : "🔦")}
-                {!mounted && "💡"} {/* Default to light icon on server to prevent empty flash, or just match server default */}
-              </div>
-            </button>
+            {/* <button */}
+              {/* onClick={toggleTheme} */}
+              {/* className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 group animate-bounce-gentle" */}
+              {/* title="Toggle theme (Lamp)" */}
+              {/* suppressHydrationWarning */}
+            {/* > */}
+              {/* <div className="text-lg group-hover:rotate-12 transition-transform duration-300"> */}
+                {/* {mounted && (theme === "light" ? "💡" : "🔦")} */}
+                {/* {!mounted && "💡"} Default to light icon on server to prevent empty flash, or just match server default */}
+              {/* </div> */}
+            {/* </button> */}
 
             {/* Auth Buttons */}
             {isAuthenticated ? (

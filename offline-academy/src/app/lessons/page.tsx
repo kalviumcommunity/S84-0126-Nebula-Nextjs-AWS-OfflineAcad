@@ -111,7 +111,7 @@ export default function LessonsPage() {
   const notStartedCount = lessons.filter(l => !l.userProgress).length;
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen bg-[var(--background)] transition-colors duration-300">
       <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -119,8 +119,8 @@ export default function LessonsPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">My Lessons</h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">My Lessons</h1>
+              <p className="text-[var(--secondary)]">
                 Continue your learning journey with our comprehensive lessons
               </p>
             </div>

@@ -70,31 +70,53 @@ export default function DashboardPage() {
     { label: "Completed Lessons", value: stats?.completedLessons?.toString() || "0", icon: "✅", color: "green" },
   ];
 
+  // Helper for missed icon
+  function MessageCircle(props: any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+      </svg>
+    )
+  }
+
+
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen bg-[var(--background)] transition-colors duration-300">
       <Sidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             {/* Welcome Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Welcome back, {user?.name || "Student"}! 👋
-                  </h1>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Ready to continue your learning journey?
-                  </p>
-                </div>
-                <div className="hidden md:block">
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                      All systems online
-                    </span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2 tracking-tight">
+                  Welcome back, {user?.name || "Student"}!
+                </h1>
+                <p className="text-[var(--secondary)]">
+                  Ready to continue your learning journey?
+                </p>
+              </div>
+              <div className="hidden md:block">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 shadow-sm">
+                  <div className="relative">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse relative z-10"></div>
+                    <div className="w-2 h-2 rounded-full bg-green-500 absolute top-0 left-0 animate-ping opacity-75"></div>
                   </div>
+                  <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                    All systems online
+                  </span>
                 </div>
               </div>
             </div>
@@ -140,8 +162,8 @@ export default function DashboardPage() {
               {/* Recent Lessons - Takes 2 columns */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Continue Learning */}
-                <Card>
-                  <CardHeader>
+                <Card className="border-[var(--card-border)]">
+                  <CardHeader className="border-b border-[var(--card-border)] pb-4">
                     <div className="flex items-center justify-between">
                       <CardTitle>Continue Learning</CardTitle>
                       <Link href="/courses">
@@ -221,11 +243,14 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* File Upload Module */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>📁 Upload Learning Materials</CardTitle>
+                <Card className="border-[var(--card-border)]">
+                  <CardHeader className="border-b border-[var(--card-border)] pb-4">
+                    <CardTitle className="flex items-center gap-2">
+                      <Upload className="w-5 h-5 text-[var(--primary)]" />
+                      Upload Learning Materials
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-6">
                     <FileUpload />
                   </CardContent>
                 </Card>
@@ -234,19 +259,22 @@ export default function DashboardPage() {
               {/* Right Sidebar - Takes 1 column */}
               <div className="space-y-6">
                 {/* Quick Actions */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>⚡ Quick Actions</CardTitle>
+                <Card className="border-[var(--card-border)]">
+                  <CardHeader className="border-b border-[var(--card-border)] pb-4">
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-[var(--primary)]" />
+                      Quick Actions
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="pt-6 space-y-3">
                     <Link href="/courses">
-                      <Button className="w-full justify-start" variant="outline">
-                        📚 Browse Courses
+                      <Button className="w-full justify-start gap-2" variant="outline">
+                        <Search className="w-4 h-4" /> Browse Courses
                       </Button>
                     </Link>
                     <Link href="/progress">
-                      <Button className="w-full justify-start" variant="outline">
-                        📈 View Progress
+                      <Button className="w-full justify-start gap-2" variant="outline">
+                        <TrendingUp className="w-4 h-4" /> View Progress
                       </Button>
                     </Link>
                     <Link href="/lessons">
@@ -255,8 +283,8 @@ export default function DashboardPage() {
                       </Button>
                     </Link>
                     <Link href="/settings">
-                      <Button className="w-full justify-start" variant="outline">
-                        ⚙️ Settings
+                      <Button className="w-full justify-start gap-2" variant="outline">
+                        <Settings className="w-4 h-4" /> Settings
                       </Button>
                     </Link>
                   </CardContent>

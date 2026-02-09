@@ -5,6 +5,17 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "@/components/ui";
 import { toast } from "react-hot-toast";
 import DeleteModal from "@/components/DeleteModal";
+import {
+  BookOpen,
+  Plus,
+  Settings,
+  Edit,
+  CheckCircle,
+  XCircle,
+  Trash2,
+  BookMarked,
+  Users
+} from "lucide-react";
 
 interface Course {
   id: string;
@@ -88,44 +99,48 @@ export default function AdminCoursesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="text-center">
-          <div className="animate-spin text-6xl mb-4">⚙️</div>
-          <p className="text-gray-600 dark:text-gray-400">Loading courses...</p>
+          <Settings className="w-12 h-12 animate-spin text-[var(--primary)] mx-auto mb-4" />
+          <p className="text-[var(--secondary)]">Loading courses...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">
+    <div className="min-h-screen bg-[var(--background)] p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Manage Courses 📚
+            <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2 tracking-tight flex items-center gap-3">
+              <BookMarked className="w-8 h-8 text-[var(--primary)]" />
+              Manage Courses
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-[var(--secondary)] ml-11">
               Create, edit, and manage all your courses
             </p>
           </div>
           <Link href="/admin/courses/new">
             <Button className="flex items-center gap-2">
-              <span>➕</span> Create New Course
+              <Plus className="w-5 h-5" />
+              <span>Create New Course</span>
             </Button>
           </Link>
         </div>
 
         {/* Courses Grid */}
         {courses.length === 0 ? (
-          <Card>
+          <Card className="border-[var(--card-border)] bg-[var(--card-bg)]">
             <CardContent className="py-12 text-center">
-              <div className="text-6xl mb-4">📚</div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <div className="mx-auto w-16 h-16 bg-[var(--nav-bg)] rounded-full flex items-center justify-center mb-4">
+                <BookOpen className="w-8 h-8 text-[var(--primary)]" />
+              </div>
+              <h3 className="text-xl font-semibold text-[var(--foreground)] mb-2">
                 No Courses Yet
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-[var(--secondary)] mb-6">
                 Get started by creating your first course
               </p>
               <Link href="/admin/courses/new">
@@ -136,70 +151,84 @@ export default function AdminCoursesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses.map((course) => (
-              <Card key={course.id} className="hover:shadow-lg transition-all">
-                <div className="h-32 bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-6xl">
-                  {course.image || "📚"}
+              <Card key={course.id} className="hover:shadow-lg transition-all border-[var(--card-border)] overflow-hidden group">
+                <div className="h-32 bg-[var(--nav-bg)] flex items-center justify-center border-b border-[var(--card-border)] relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[var(--background)] opacity-50"></div>
+                  {course.image ? (
+                    <span className="text-6xl filter drop-shadow-md">{course.image}</span>
+                  ) : (
+                    <BookOpen className="w-16 h-16 text-[var(--primary)] opacity-20" />
+                  )}
                 </div>
 
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <CardTitle className="text-lg">{course.title}</CardTitle>
+                    <CardTitle className="text-lg line-clamp-1" title={course.title}>{course.title}</CardTitle>
                     <Badge variant={levelColors[course.level] as any}>
                       {course.level}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-[var(--secondary)] font-medium">
                     {course.subject}
                   </p>
                 </CardHeader>
 
                 <CardContent>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                    {course.description || "No description"}
+                  <p className="text-sm text-[var(--secondary)] mb-4 line-clamp-2 min-h-[40px]">
+                    {course.description || "No description provided."}
                   </p>
 
                   {/* Stats */}
-                  <div className="flex gap-4 mb-4 text-sm">
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Lessons:</span>
-                      <span className="ml-1 font-semibold">{course._count.lessons}</span>
+                  <div className="flex gap-4 mb-4 text-sm py-2 border-t border-b border-[var(--card-border)] bg-[var(--background)]/50 -mx-6 px-6">
+                    <div className="flex items-center gap-1.5">
+                      <BookOpen className="w-4 h-4 text-[var(--primary)]" />
+                      <span className="font-semibold text-[var(--foreground)]">{course._count.lessons}</span>
+                      <span className="text-[var(--secondary)]">Lessons</span>
                     </div>
-                    <div>
-                      <span className="text-gray-600 dark:text-gray-400">Enrolled:</span>
-                      <span className="ml-1 font-semibold">{course._count.enrollments}</span>
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-4 h-4 text-[var(--primary)]" />
+                      <span className="font-semibold text-[var(--foreground)]">{course._count.enrollments}</span>
+                      <span className="text-[var(--secondary)]">Enrolled</span>
                     </div>
                   </div>
 
                   {/* Status */}
-                  <div className="mb-4">
+                  <div className="flex items-center justify-between gap-4 mt-4">
                     <Badge variant={course.isPublished ? "success" : "warning"}>
-                      {course.isPublished ? "Published" : "Draft"}
+                      <div className="flex items-center gap-1">
+                        {course.isPublished ? <CheckCircle className="w-3 h-3" /> : <Settings className="w-3 h-3" />}
+                        {course.isPublished ? "Published" : "Draft"}
+                      </div>
                     </Badge>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <Link href={`/admin/courses/${course.id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        Edit
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <Link href={`/admin/courses/${course.id}`}>
+                        <Button variant="outline" size="sm" className="h-8 px-2" title="Edit">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2"
+                        title={course.isPublished ? "Unpublish" : "Publish"}
+                        onClick={() => togglePublish(course.id, course.isPublished)}
+                      >
+                        {course.isPublished ? <XCircle className="w-4 h-4 text-orange-500" /> : <CheckCircle className="w-4 h-4 text-green-500" />}
                       </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => togglePublish(course.id, course.isPublished)}
-                    >
-                      {course.isPublished ? "📝" : "✅"}
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() =>
-                        setDeleteModal({ isOpen: true, courseId: course.id, title: course.title })
-                      }
-                    >
-                      🗑️
-                    </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="h-8 px-2"
+                        title="Delete"
+                        onClick={() =>
+                          setDeleteModal({ isOpen: true, courseId: course.id, title: course.title })
+                        }
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

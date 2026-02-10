@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useState, useContext, ReactNode, useEffect } from "react";
+import { createContext, useState, useContext, ReactNode, useEffect, useCallback } from "react";
 import { Role } from "@prisma/client";
 
 export interface UserProfile {
@@ -39,16 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (userProfile: UserProfile) => {
+  const login = useCallback((userProfile: UserProfile) => {
     localStorage.setItem("offline_user_profile", JSON.stringify(userProfile));
     setUser(userProfile);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem("offline_user_profile");
     // Also clear cookie via API if possible, but for now just clear local state
     setUser(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

@@ -77,15 +77,17 @@ export default function AdminDashboard() {
     <RoleGuard
       allowedRoles={[Role.ADMIN]}
       fallback={
-        <div className="min-h-screen flex items-center justify-center p-8">
-          <Card className="max-w-md">
-            <CardContent className="pt-6 text-center">
-              <div className="text-6xl mb-4">🔒</div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="min-h-screen flex items-center justify-center p-8 bg-[var(--background)]">
+          <Card className="max-w-md border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/20">
+            <CardContent className="pt-8 text-center">
+              <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">
                 Access Denied
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                You need Admin privileges to access this area.
+              <p className="text-[var(--secondary)] mb-6">
+                Administrative privileges are required to view this dashboard.
               </p>
               <Link href="/admin">
                 <Button>Stay on Admin Dashboard</Button>
@@ -95,16 +97,24 @@ export default function AdminDashboard() {
         </div>
       }
     >
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-[var(--background)] p-8 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              Admin Dashboard 🎓
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Manage courses, lessons, and monitor platform activity
-            </p>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight flex items-center gap-3">
+                <LayoutDashboard className="w-8 h-8 text-[var(--primary)]" />
+                Admin Dashboard
+              </h1>
+              <p className="text-[var(--secondary)] mt-1 ml-11">
+                Overview of platform performance and key metrics
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-[var(--secondary)] bg-[var(--card-bg)] px-3 py-1 rounded-full border border-[var(--card-border)]">
+                Last updated: {new Date().toLocaleTimeString()}
+              </span>
+            </div>
           </div>
 
           {/* Stats Grid */}
@@ -148,19 +158,22 @@ export default function AdminDashboard() {
           </div>
 
           {/* Quick Actions */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle>⚡ Quick Actions</CardTitle>
+          <Card className="border-[var(--card-border)] bg-[var(--nav-bg)]">
+            <CardHeader className="border-b border-[var(--card-border)] pb-4">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <Activity className="w-5 h-5 text-[var(--primary)]" />
+                Quick Actions
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {quickActions.map((action) => (
-                  <Link key={action.label} href={action.href}>
+                  <Link key={action.label} href={action.href} className="w-full">
                     <button
-                      className={`${action.color} text-white p-6 rounded-lg w-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col items-center gap-2`}
+                      className={`${action.color} text-white p-4 rounded-lg w-full shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center gap-3 font-medium h-14`}
                     >
-                      <span className="text-3xl">{action.icon}</span>
-                      <span className="font-semibold">{action.label}</span>
+                      {action.icon}
+                      <span>{action.label}</span>
                     </button>
                   </Link>
                 ))}
@@ -174,27 +187,32 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle>🛠️ Management Tools</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <Link href="/admin/courses">
-                  <Button className="w-full justify-start" variant="outline">
-                    📚 Manage Courses
-                  </Button>
-                </Link>
-                <Link href="/admin/lessons">
-                  <Button className="w-full justify-start" variant="outline">
-                    ✏️ Manage Lessons
-                  </Button>
-                </Link>
-                <Link href="/admin/users">
-                  <Button className="w-full justify-start" variant="outline">
-                    👥 Manage Users
-                  </Button>
-                </Link>
-                <Link href="/admin/settings">
-                  <Button className="w-full justify-start" variant="outline">
-                    ⚙️ Platform Settings
-                  </Button>
-                </Link>
+              <CardContent className="pt-6 space-y-3">
+                {[
+                  { title: "Manage Courses", icon: <BookOpen className="w-4 h-4" />, href: "/admin/courses", desc: "Create, edit, and publish courses" },
+                  { title: "Manage Lessons", icon: <FileText className="w-4 h-4" />, href: "/admin/lessons", desc: "Add content to your curriculum" },
+                  { title: "User Management", icon: <Users className="w-4 h-4" />, href: "/admin/users", desc: "View students and progress" },
+                  { title: "Platform Settings", icon: <Settings className="w-4 h-4" />, href: "/admin/settings", desc: "Configure platform behavior" },
+                ].map((tool) => (
+                  <Link key={tool.title} href={tool.href} className="block group">
+                    <div className="flex items-center gap-4 p-4 rounded-lg border border-[var(--card-border)] hover:border-[var(--primary-hover)] hover:bg-[var(--nav-bg)] transition-all duration-200">
+                      <div className="p-2 rounded-md bg-[var(--background)] group-hover:bg-white dark:group-hover:bg-black transition-colors text-[var(--primary)]">
+                        {tool.icon}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-[var(--foreground)] group-hover:text-[var(--primary-hover)] transition-colors">
+                          {tool.title}
+                        </h4>
+                        <p className="text-xs text-[var(--secondary)]">
+                          {tool.desc}
+                        </p>
+                      </div>
+                      <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-[var(--secondary)]">
+                        →
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </CardContent>
             </Card>
           </div>

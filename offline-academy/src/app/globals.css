@@ -1,27 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafbfc;
-  --foreground: #1a1f36;
-  --primary: #6b7280;
-  --primary-hover: #4b5563;
-  --secondary: #9ca3af;
-  --accent: #8b5cf6;
+  /* Natural Light Theme (Warm/Clean) */
+  --background: #fdfbf7; /* Warm Paper White */
+  --foreground: #1c1917; /* Soft Black (Stone-950) */
+  --primary: #57534e;    /* Stone-600 */
+  --primary-hover: #292524; /* Stone-800 */
+  --secondary: #78716c;  /* Stone-500 */
+  --accent: #8b5cf6;     /* Violet (Kept for brand) */
   --card-bg: #ffffff;
-  --card-border: #e5e7eb;
-  --nav-bg: rgba(250, 251, 252, 0.7);
+  --card-border: #e7e5e4; /* Stone-200 */
+  --nav-bg: rgba(253, 251, 247, 0.8);
 }
 
 .dark {
-  --background: #0f1117;
-  --foreground: #e5e7eb;
-  --primary: #d1d5db;
-  --primary-hover: #f3f4f6;
-  --secondary: #9ca3af;
+  /* Natural Dark Theme (Deep Stone/Charcoal) */
+  --background: #0c0a09; /* Deep Warm Black (Stone-950) */
+  --foreground: #f5f5f4; /* Stone-100 */
+  --primary: #a8a29e;    /* Stone-400 */
+  --primary-hover: #e7e5e4; /* Stone-200 */
+  --secondary: #d6d3d1;  /* Stone-300 (Higher contrast for secondary text) */
   --accent: #a78bfa;
-  --card-bg: #1a1f36;
-  --card-border: #2d3748;
-  --nav-bg: rgba(15, 17, 23, 0.7);
+  --card-bg: #1c1917;    /* Stone-900 */
+  --card-border: #292524; /* Stone-800 */
+  --nav-bg: rgba(12, 10, 9, 0.8);
 }
 
 * {

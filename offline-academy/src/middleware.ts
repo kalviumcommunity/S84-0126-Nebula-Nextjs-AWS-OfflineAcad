@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
 import { logger } from "@/lib/logger";
-
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-fallback';
 
 /**
  * Generate a unique correlation ID for request tracing
@@ -60,103 +57,6 @@ export function middleware(req: NextRequest) {
   // ✅ Ignore preflight requests
   if (req.method === "OPTIONS") {
     return NextResponse.next();
-  }
-
-  /**
-   * 🔓 PUBLIC ROUTES (no auth)
-   * - Used for Redis caching assignment
-   */
-  if (pathname.startsWith("/api/users")) {
-    const response = NextResponse.next();
-    // Add request ID to response headers for client tracking
-    response.headers.set('x-request-id', requestId);
-    return response;
-  }
-
-  /**
-   * 🔐 PROTECTED ADMIN ROUTES
-   */
-  if (pathname.startsWith("/api/admin")) {
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader?.split(" ")[1];
-
-    if (!token) {
-      try {
-        logger.warn('Admin access denied - token missing', {
-          requestId,
-          path: pathname,
-        });
-      } catch (error) {
-        console.warn(`[WARN] Admin access denied - token missing: ${pathname}`);
-      }
-
-      return NextResponse.json(
-        { success: false, message: "Token missing", requestId },
-        { status: 401, headers: { 'x-request-id': requestId } }
-      );
-    }
-
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as {
-        id: string;
-        email: string;
-        role: "STUDENT" | "ADMIN";
-      };
-
-      if (decoded.role !== "ADMIN") {
-        try {
-          logger.warn('Admin access denied - insufficient privileges', {
-            requestId,
-            userId: decoded.id,
-            userRole: decoded.role,
-            path: pathname,
-          });
-        } catch (error) {
-          console.warn(`[WARN] Admin access denied - insufficient privileges: ${pathname}`);
-        }
-
-        return NextResponse.json(
-          { success: false, message: "Access denied", requestId },
-          { status: 403, headers: { 'x-request-id': requestId } }
-        );
-      }
-
-      try {
-        logger.debug('Admin access granted', {
-          requestId,
-          userId: decoded.id,
-          path: pathname,
-        });
-      } catch (error) {
-        console.log(`[DEBUG] Admin access granted: ${pathname}`);
-      }
-
-      // Attach user info
-      const requestHeaders = new Headers(req.headers);
-      requestHeaders.set("x-user-id", decoded.id);
-      requestHeaders.set("x-user-email", decoded.email);
-      requestHeaders.set("x-user-role", decoded.role);
-      requestHeaders.set("x-request-id", requestId);
-
-      return NextResponse.next({
-        request: { headers: requestHeaders },
-      });
-    } catch (error) {
-      try {
-        logger.warn('Admin access denied - invalid token', {
-          requestId,
-          path: pathname,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      } catch (logError) {
-        console.warn(`[WARN] Admin access denied - invalid token: ${pathname}`);
-      }
-
-      return NextResponse.json(
-        { success: false, message: "Invalid or expired token", requestId },
-        { status: 403, headers: { 'x-request-id': requestId } }
-      );
-    }
   }
 
   const response = NextResponse.next();

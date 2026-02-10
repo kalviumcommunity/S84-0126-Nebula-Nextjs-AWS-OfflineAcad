@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import redis from "@/lib/redis";
 import { verifyAuth } from "@/lib/auth-server";
 
 // GET all lessons
@@ -17,6 +18,19 @@ export async function GET(request: NextRequest) {
     } catch {
       // Continue without userId for public access
     }
+
+    const cacheKey = `lessons:list:course:${courseId ?? "all"}:published:${published ?? "all"}:user:${userId ?? "public"}`;
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.info(`Cache hit: ${cacheKey}`);
+        return NextResponse.json(JSON.parse(cached));
+      }
+    } catch (redisError) {
+      console.warn("Redis cache read failed for lessons list", redisError);
+    }
+
+    console.info(`Cache miss: ${cacheKey}`);
 
     const lessons = await prisma.lesson.findMany({
       where: {
@@ -54,6 +68,12 @@ export async function GET(request: NextRequest) {
       userProgress: lesson.progress && lesson.progress.length > 0 ? lesson.progress[0] : null,
       isCompleted: lesson.progress && lesson.progress.length > 0 ? lesson.progress[0].completed : false
     }));
+
+    try {
+      await redis.set(cacheKey, JSON.stringify(lessonsWithProgress), "EX", 60);
+    } catch (redisError) {
+      console.warn("Redis cache write failed for lessons list", redisError);
+    }
 
     return NextResponse.json(lessonsWithProgress);
   } catch (error: any) {
@@ -97,6 +117,20 @@ export async function POST(request: NextRequest) {
         isPublished: isPublished || false,
       },
     });
+
+    const courseKey = courseId || "all";
+    try {
+      await redis.del(
+        `lessons:list:course:${courseKey}:published:all:user:public`,
+        `lessons:list:course:${courseKey}:published:true:user:public`,
+        `lessons:list:course:${courseKey}:published:false:user:public`,
+        "lessons:list:course:all:published:all:user:public",
+        "lessons:list:course:all:published:true:user:public",
+        "lessons:list:course:all:published:false:user:public"
+      );
+    } catch (redisError) {
+      console.warn("Redis cache invalidation failed for lessons list", redisError);
+    }
 
     return NextResponse.json(lesson, { status: 201 });
   } catch (error: any) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import redis from "@/lib/redis";
 import { verifyAuth } from "@/lib/auth-server";
 
 // GET single lesson by ID
@@ -19,6 +20,19 @@ export async function GET(
       // Continue without userId for public access
     }
     
+    const cacheKey = `lessons:detail:${id}:user:${userId ?? "public"}`;
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.info(`Cache hit: ${cacheKey}`);
+        return NextResponse.json(JSON.parse(cached));
+      }
+    } catch (redisError) {
+      console.warn("Redis cache read failed for lesson detail", redisError);
+    }
+
+    console.info(`Cache miss: ${cacheKey}`);
+
     const lesson = await prisma.lesson.findUnique({
       where: { id },
       include: {
@@ -57,6 +71,12 @@ export async function GET(
       isCompleted: lesson.progress && lesson.progress.length > 0 ? lesson.progress[0].completed : false
     };
 
+    try {
+      await redis.set(cacheKey, JSON.stringify(lessonWithProgress), "EX", 60);
+    } catch (redisError) {
+      console.warn("Redis cache write failed for lesson detail", redisError);
+    }
+
     return NextResponse.json(lessonWithProgress);
   } catch (error: any) {
     return NextResponse.json(
@@ -82,6 +102,10 @@ export async function PUT(
     }
 
     const { id } = await params;
+    const existingLesson = await prisma.lesson.findUnique({
+      where: { id },
+      select: { courseId: true },
+    });
     const body = await request.json();
     const { title, description, duration, contentUrl, courseId, order, isPublished } = body;
 
@@ -99,6 +123,21 @@ export async function PUT(
       where: { id },
       data: updateData,
     });
+
+    const resolvedCourseId = courseId || existingLesson?.courseId || "all";
+    try {
+      await redis.del(
+        `lessons:detail:${id}:user:public`,
+        `lessons:list:course:${resolvedCourseId}:published:all:user:public`,
+        `lessons:list:course:${resolvedCourseId}:published:true:user:public`,
+        `lessons:list:course:${resolvedCourseId}:published:false:user:public`,
+        "lessons:list:course:all:published:all:user:public",
+        "lessons:list:course:all:published:true:user:public",
+        "lessons:list:course:all:published:false:user:public"
+      );
+    } catch (redisError) {
+      console.warn("Redis cache invalidation failed for lesson update", redisError);
+    }
 
     return NextResponse.json(lesson);
   } catch (error: any) {
@@ -125,9 +164,28 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const existingLesson = await prisma.lesson.findUnique({
+      where: { id },
+      select: { courseId: true },
+    });
     await prisma.lesson.delete({
       where: { id },
     });
+
+    const resolvedCourseId = existingLesson?.courseId || "all";
+    try {
+      await redis.del(
+        `lessons:detail:${id}:user:public`,
+        `lessons:list:course:${resolvedCourseId}:published:all:user:public`,
+        `lessons:list:course:${resolvedCourseId}:published:true:user:public`,
+        `lessons:list:course:${resolvedCourseId}:published:false:user:public`,
+        "lessons:list:course:all:published:all:user:public",
+        "lessons:list:course:all:published:true:user:public",
+        "lessons:list:course:all:published:false:user:public"
+      );
+    } catch (redisError) {
+      console.warn("Redis cache invalidation failed for lesson delete", redisError);
+    }
 
     return NextResponse.json({ message: "Lesson deleted successfully" });
   } catch (error: any) {

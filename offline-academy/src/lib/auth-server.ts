@@ -37,6 +37,9 @@ export async function verifyAuth(request: NextRequest): Promise<{ userId: string
 
     // Fallback to old JWT token method (for password/OTP users)
 
+    const token = request.cookies.get("refreshToken")?.value;
+    if (!token) return null;
+
     try {
         const payload = await verifyToken(token);
         if (!payload) return null;

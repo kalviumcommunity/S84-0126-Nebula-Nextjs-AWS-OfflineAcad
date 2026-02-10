@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import redis from "@/lib/redis";
 import { verifyAuth } from "@/lib/auth-server";
 
 // GET single course by ID
@@ -9,6 +10,20 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const cacheKey = `courses:detail:${id}`;
+
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.info(`Cache hit: ${cacheKey}`);
+        return NextResponse.json(JSON.parse(cached));
+      }
+    } catch (redisError) {
+      console.warn("Redis cache read failed for course detail", redisError);
+    }
+
+    console.info(`Cache miss: ${cacheKey}`);
+
     const course = await prisma.course.findUnique({
       where: { id },
       include: {
@@ -28,6 +43,12 @@ export async function GET(
         { error: "Course not found" },
         { status: 404 }
       );
+    }
+
+    try {
+      await redis.set(cacheKey, JSON.stringify(course), "EX", 60);
+    } catch (redisError) {
+      console.warn("Redis cache write failed for course detail", redisError);
     }
 
     return NextResponse.json(course);
@@ -72,6 +93,17 @@ export async function PUT(
       data: updateData,
     });
 
+    try {
+      await redis.del(
+        `courses:detail:${id}`,
+        "courses:list:published:all",
+        "courses:list:published:true",
+        "courses:list:published:false"
+      );
+    } catch (redisError) {
+      console.warn("Redis cache invalidation failed for course update", redisError);
+    }
+
     return NextResponse.json(course);
   } catch (error: any) {
     return NextResponse.json(
@@ -100,6 +132,17 @@ export async function DELETE(
     await prisma.course.delete({
       where: { id },
     });
+
+    try {
+      await redis.del(
+        `courses:detail:${id}`,
+        "courses:list:published:all",
+        "courses:list:published:true",
+        "courses:list:published:false"
+      );
+    } catch (redisError) {
+      console.warn("Redis cache invalidation failed for course delete", redisError);
+    }
 
     return NextResponse.json({ message: "Course deleted successfully" });
   } catch (error: any) {

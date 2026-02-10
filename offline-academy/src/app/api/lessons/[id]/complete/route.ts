@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAuth } from "@/lib/auth-server";
 import { prisma } from "@/lib/db/prisma";
+import redis from "@/lib/redis";
 
 export async function POST(
     request: NextRequest,
@@ -18,6 +19,11 @@ export async function POST(
 
         const userId = payload.userId;
         const { id: lessonId } = await params;
+
+        const lesson = await prisma.lesson.findUnique({
+            where: { id: lessonId },
+            select: { courseId: true }
+        });
 
         // Check if lesson exists
         const lesson = await prisma.lesson.findUnique({
@@ -77,6 +83,20 @@ export async function POST(
             });
         }
 
+        try {
+            await redis.del(
+                `lessons:detail:${lessonId}:user:${userId}`,
+                `lessons:list:course:${lesson.courseId}:published:all:user:${userId}`,
+                `lessons:list:course:${lesson.courseId}:published:true:user:${userId}`,
+                `lessons:list:course:${lesson.courseId}:published:false:user:${userId}`,
+                `lessons:list:course:all:published:all:user:${userId}`,
+                `lessons:list:course:all:published:true:user:${userId}`,
+                `lessons:list:course:all:published:false:user:${userId}`
+            );
+        } catch (redisError) {
+            console.warn("Redis cache invalidation failed for lesson completion", redisError);
+        }
+
         return NextResponse.json({
             success: true,
             progress,
@@ -127,6 +147,22 @@ export async function DELETE(
                 completed: false
             }
         });
+
+        try {
+            await redis.del(
+                `lessons:detail:${lessonId}:user:${userId}`,
+                ...(lesson?.courseId ? [
+                    `lessons:list:course:${lesson.courseId}:published:all:user:${userId}`,
+                    `lessons:list:course:${lesson.courseId}:published:true:user:${userId}`,
+                    `lessons:list:course:${lesson.courseId}:published:false:user:${userId}`
+                ] : []),
+                `lessons:list:course:all:published:all:user:${userId}`,
+                `lessons:list:course:all:published:true:user:${userId}`,
+                `lessons:list:course:all:published:false:user:${userId}`
+            );
+        } catch (redisError) {
+            console.warn("Redis cache invalidation failed for lesson uncomplete", redisError);
+        }
 
         return NextResponse.json({
             success: true,

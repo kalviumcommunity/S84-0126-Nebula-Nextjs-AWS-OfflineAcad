@@ -10,21 +10,26 @@ import { Role } from "@prisma/client";
  * Supports both Google OAuth and traditional email/password authentication
  * With automatic account linking for same email addresses
  */
-export const authOptions: NextAuthOptions = {
-  // Note: Not using PrismaAdapter to allow custom account linking logic
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
-    }),
-    CredentialsProvider({
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+const providers = [
+  ...(googleClientId && googleClientSecret
+    ? [
+        GoogleProvider({
+          clientId: googleClientId,
+          clientSecret: googleClientSecret,
+          authorization: {
+            params: {
+              prompt: "consent",
+              access_type: "offline",
+              response_type: "code",
+            },
+          },
+        }),
+      ]
+    : []),
+  CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -60,8 +65,16 @@ export const authOptions: NextAuthOptions = {
           image: user.image,
         };
       }
-    })
-  ],
+    }),
+];
+
+const nextAuthSecret =
+  process.env.NEXTAUTH_SECRET ||
+  (process.env.NODE_ENV !== "production" ? process.env.JWT_SECRET : undefined);
+
+export const authOptions: NextAuthOptions = {
+  // Note: Not using PrismaAdapter to allow custom account linking logic
+  providers,
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google" && user.email) {
@@ -179,6 +192,6 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: nextAuthSecret,
   debug: process.env.NODE_ENV === "development",
 };

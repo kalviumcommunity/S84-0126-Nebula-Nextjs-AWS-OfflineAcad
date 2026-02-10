@@ -1,7 +1,8 @@
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL!, {
-  tls: process.env.REDIS_URL?.startsWith("rediss://") ? {} : undefined,
+const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+const redis = new Redis(redisUrl, {
+  tls: redisUrl.startsWith("rediss://") ? {} : undefined,
 });
 
 redis.on("connect", () => {

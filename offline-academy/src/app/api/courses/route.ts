@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import redis from "@/lib/redis";
 import { verifyAuth } from "@/lib/auth-server";
 
 // GET all courses
@@ -7,6 +8,19 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const published = searchParams.get("published");
+
+    const cacheKey = `courses:list:published:${published ?? "all"}`;
+    try {
+      const cached = await redis.get(cacheKey);
+      if (cached) {
+        console.info(`Cache hit: ${cacheKey}`);
+        return NextResponse.json(JSON.parse(cached));
+      }
+    } catch (redisError) {
+      console.warn("Redis cache read failed for courses list", redisError);
+    }
+
+    console.info(`Cache miss: ${cacheKey}`);
 
     const courses = await prisma.course.findMany({
       where: published === "true" ? { isPublished: true } : undefined,
@@ -26,6 +40,12 @@ export async function GET(request: NextRequest) {
         createdAt: "desc",
       },
     });
+
+    try {
+      await redis.set(cacheKey, JSON.stringify(courses), "EX", 60);
+    } catch (redisError) {
+      console.warn("Redis cache write failed for courses list", redisError);
+    }
 
     return NextResponse.json(courses);
   } catch (error: any) {
@@ -68,6 +88,16 @@ export async function POST(request: NextRequest) {
         isPublished: isPublished || false,
       },
     });
+
+    try {
+      await redis.del(
+        "courses:list:published:all",
+        "courses:list:published:true",
+        "courses:list:published:false"
+      );
+    } catch (redisError) {
+      console.warn("Redis cache invalidation failed for courses list", redisError);
+    }
 
     return NextResponse.json(course, { status: 201 });
   } catch (error: any) {

@@ -9,8 +9,19 @@ const CSP = [
   "connect-src 'self' https://api.github.com https://czgonpfmuzibutsthkhv.supabase.co https://api.emailjs.com",
 ].join('; ');
 
+const appRoot = __dirname;
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  turbopack: {
+    root: appRoot,
+  },
+  experimental: {
+    turbo: {
+      root: appRoot,
+    },
+  },
+  outputFileTracingRoot: appRoot,
   
   async headers() {
     return [

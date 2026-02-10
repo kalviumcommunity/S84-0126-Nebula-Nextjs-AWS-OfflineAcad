@@ -47,6 +47,36 @@ export async function verifyAuth(
     const payload = await verifyToken(token);
     if (!payload) return null;
 
+
+export async function verifyAuth(request: NextRequest): Promise<{ userId: string; email: string; role: Role } | null> {
+    // First try NextAuth session (for OAuth users)
+    const session = await getServerSession(authOptions);
+    if (session?.user) {
+        return {
+            userId: session.user.id,
+            email: session.user.email!,
+            role: session.user.role as Role,
+        };
+    }
+
+    // Fallback to old JWT token method (for password/OTP users)
+
+    const token = request.cookies.get("refreshToken")?.value;
+    if (!token) return null;
+
+    try {
+        const payload = await verifyToken(token);
+        if (!payload) return null;
+
+        return {
+            userId: payload.userId as string,
+            email: payload.email as string,
+            role: payload.role as Role,
+        };
+    } catch (error) {
+        return null; // Invalid token
+    }
+
     return {
       userId: payload.userId as string,
       email: payload.email as string,
@@ -55,6 +85,7 @@ export async function verifyAuth(
   } catch {
     return null; // Invalid / expired token
   }
+
 }
 
 export function unauthorized() {

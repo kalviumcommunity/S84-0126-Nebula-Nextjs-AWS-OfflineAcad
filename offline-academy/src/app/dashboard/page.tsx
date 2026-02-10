@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Badge, ProgressBar } 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import { Search, Settings, TrendingUp, Upload, Zap } from "lucide-react";
 
 interface DashboardStats {
   coursesEnrolled: number;

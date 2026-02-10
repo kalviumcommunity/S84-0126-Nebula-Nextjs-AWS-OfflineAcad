@@ -57,7 +57,10 @@ export default function CoursesPage() {
       // Get enrolled course IDs
       if (enrollmentsRes.ok) {
         const enrollmentsData = await enrollmentsRes.json();
-        const enrolledIds = new Set(enrollmentsData.map((e: any) => e.courseId));
+        const enrolledIds = new Set<string>(
+  enrollmentsData.map((e: { courseId: string }) => e.courseId)
+);
+
         setEnrolledCourseIds(enrolledIds);
       }
     } catch (error: any) {
@@ -197,7 +200,10 @@ export default function CoursesPage() {
                               {course.subject}
                             </p>
                           </div>
-                          <Badge variant={levelColors[course.level]}>{course.level}</Badge>
+                          <Badge className={levelColors[course.level]}>
+  {course.level}
+</Badge>
+
                         </div>
                       </CardHeader>
 

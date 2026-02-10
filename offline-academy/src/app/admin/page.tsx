@@ -5,6 +5,16 @@ import { Role } from "@prisma/client";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@/components/ui";
 import { toast } from "react-hot-toast";
+import {
+  AlertCircle,
+  LayoutDashboard,
+  Activity,
+  BookOpen,
+  FileText,
+  Users,
+  Settings,
+} from "lucide-react";
+
 
 interface AdminStats {
   totalCourses: number;

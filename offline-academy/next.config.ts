@@ -6,7 +6,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: https://czgonpfmuzibutsthkhv.supabase.co",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://api.github.com https://czgonpfmuzibutsthkhv.supabase.co",
+  "connect-src 'self' https://api.github.com https://czgonpfmuzibutsthkhv.supabase.co https://api.emailjs.com",
 ].join('; ');
 
 const nextConfig: NextConfig = {

@@ -2,12 +2,21 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 type Role = "STUDENT" | "ADMIN";
 
 export async function getCurrentUserRole(): Promise<Role | null> {
+    // First try NextAuth session (for OAuth users)
+    const session = await getServerSession(authOptions);
+    if (session?.user?.role) {
+        return session.user.role as Role;
+    }
+
+    // Fallback to old JWT token method (for password/OTP users)
     const cookieStore = await cookies();
-    const token = cookieStore.get("refreshToken")?.value; // In real app, check Access Token header first
+    const token = cookieStore.get("refreshToken")?.value;
 
     if (!token) return null;
 
@@ -16,10 +25,17 @@ export async function getCurrentUserRole(): Promise<Role | null> {
 }
 
 export async function verifyAuth(request: NextRequest): Promise<{ userId: string; email: string; role: Role } | null> {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("refreshToken")?.value;
+    // First try NextAuth session (for OAuth users)
+    const session = await getServerSession(authOptions);
+    if (session?.user) {
+        return {
+            userId: session.user.id,
+            email: session.user.email!,
+            role: session.user.role as Role,
+        };
+    }
 
-    if (!token) return null;
+    // Fallback to old JWT token method (for password/OTP users)
 
     try {
         const payload = await verifyToken(token);

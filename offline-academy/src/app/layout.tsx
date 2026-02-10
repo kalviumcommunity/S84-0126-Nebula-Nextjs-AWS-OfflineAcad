@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { UIProvider } from "@/context/UIContext";
+import { NextAuthProvider } from "@/components/providers/NextAuthProvider";
 import Header from "@/components/layout/Header";
 import { Toaster } from "react-hot-toast";
 
@@ -21,20 +22,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          <UIProvider>
-            <Header />
-            {children}
+        <NextAuthProvider>
+          <AuthProvider>
+            <UIProvider>
+              <Header />
+              {children}
 
-            {/* ✅ Global Toast Provider */}
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-              }}
-            />
-          </UIProvider>
-        </AuthProvider>
+              {/* ✅ Global Toast Provider */}
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                }}
+              />
+            </UIProvider>
+          </AuthProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

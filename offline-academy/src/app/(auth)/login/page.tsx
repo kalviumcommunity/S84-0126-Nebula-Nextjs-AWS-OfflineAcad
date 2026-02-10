@@ -91,6 +91,8 @@ export default function LoginPage() {
     toast.loading("Sending OTP...");
 
     try {
+      console.log("[OTP] Starting OTP send for email:", email);
+      
       // Get OTP from backend
       const response = await fetch("/api/auth/send-otp", {
         method: "POST",
@@ -99,34 +101,75 @@ export default function LoginPage() {
       });
 
       const result = await response.json();
+      console.log("[OTP] Backend response:", { success: result.success, hasOTP: !!result.otp });
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to send OTP");
       }
 
+      // Verify OTP is generated
+      if (!result.otp || result.otp.length !== 6) {
+        console.error("[OTP] Invalid OTP generated:", result.otp);
+        throw new Error("Invalid OTP generated");
+      }
+
+      console.log("[OTP] Generated 6-digit OTP successfully");
+
+      // Verify EmailJS credentials
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+
+      console.log("[EmailJS] Credentials check:", {
+        hasServiceId: !!serviceId,
+        hasTemplateId: !!templateId,
+        hasPublicKey: !!publicKey,
+        serviceId: serviceId?.substring(0, 8) + "...",
+      });
+
+      if (!serviceId || !templateId || !publicKey) {
+        console.error("[EmailJS] Missing credentials");
+        throw new Error("EmailJS configuration missing");
+      }
+
       // Send email using EmailJS
+      // Using standard template variable names that EmailJS typically expects
       const emailParams = {
-        to_email: result.email,
-        to_name: result.userName,
-        otp_code: result.otp,
-        from_name: "OfflineAcad",
+        email: result.email,
+        name: result.userName || "User",
+        otp: result.otp,
       };
 
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "",
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "",
+      console.log("[EmailJS] Sending email with params:", emailParams);
+
+      const emailResponse = await emailjs.send(
+        serviceId,
+        templateId,
         emailParams,
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || ""
+        publicKey
       );
+
+      console.log("[EmailJS] Email sent successfully:", emailResponse.status, emailResponse.text);
 
       toast.dismiss();
       toast.success("OTP sent to your email!");
       setOtpSent(true);
       setOtpEmail(email);
     } catch (error: any) {
+      console.error("[OTP] Error sending OTP:", error);
+      
+      // Detailed EmailJS error logging
+      if (error.status === 422 || error.text?.includes("422")) {
+        console.error("[EmailJS] 422 Error - Template variable mismatch!");
+        console.error("[EmailJS] Expected template variables: {{email}}, {{name}}, {{otp}}");
+        console.error("[EmailJS] Check your EmailJS template at https://dashboard.emailjs.com/admin/templates");
+        console.error("[EmailJS] Make sure template variables match exactly (case-sensitive)");
+      }
+      
       toast.dismiss();
-      setServerError(error.message || "Failed to send OTP");
-      toast.error(error.message || "Failed to send OTP");
+      const errorMsg = error.text || error.message || "Failed to send OTP";
+      setServerError(errorMsg);
+      toast.error(errorMsg);
     }
   };
 

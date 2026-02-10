@@ -46,7 +46,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isValid = await bcrypt.compare(password, user.password);
+    // Block password login for OAuth users
+if (!user.password) {
+  return NextResponse.json(
+    { success: false, message: "This account uses Google sign-in. Please login with Google." },
+    { status: 400 }
+  );
+}
+
+const isValid = await bcrypt.compare(password, user.password);
+
     if (!isValid) {
       const duration = Date.now() - startTime;
       requestLogger.warn('Login failed - invalid credentials', {
